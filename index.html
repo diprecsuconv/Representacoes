@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Representações — SUCONV / DIPREC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --base:#EAEEF3;--surface:#FFFFFF;--surface-2:#F4F7FA;
+  --ink:#16202E;--ink-2:#4A576A;--ink-3:#8A97A8;
+  --line:#D8E0E9;--line-2:#E8EDF2;
+  --brand:#144E8C;--brand-d:#0D3B6E;--brand-l:#E7EFF8;--gold:#B08900;
+  --radius:14px;--radius-s:9px;
+  --shadow:0 1px 2px rgba(20,40,70,.04),0 8px 24px rgba(20,40,70,.06);
+  --conc:#2B8A3E;--conc-l:#E6F4EA;
+  --pend:#E8850C;--pend-l:#FCEEDD;
+  --dilig:#9C36B5;--dilig-l:#F3E4F7;
+  --venc:#E03131;--venc-l:#FBE9E9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--base);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;padding:0 0 80px}
+.wrap{max-width:1340px;margin:0 auto;padding:0 24px}
+header{background:linear-gradient(135deg,var(--brand-d),var(--brand));color:#fff;padding:30px 0 28px;position:relative;overflow:hidden;border-bottom:3px solid var(--gold)}
+header::after{content:"";position:absolute;inset:0;opacity:.09;pointer-events:none;background-image:repeating-linear-gradient(90deg,#fff 0 1px,transparent 1px 56px)}
+.head-grid{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;position:relative;flex-wrap:wrap}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#B7D0EC;margin-bottom:9px}
+h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:27px;letter-spacing:-.01em;line-height:1.1}
+.sub{color:#C6DBF1;font-size:13.5px;margin-top:7px;max-width:600px}
+.head-right{display:flex;align-items:center;gap:10px}
+.src-label{font-size:11px;color:#AFCBEA;font-family:'IBM Plex Mono',monospace}
+#btn-refresh{display:none;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk'}
+#btn-refresh:hover{background:rgba(255,255,255,.28)}
+
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:-24px;position:relative;z-index:2}
+.kpi{background:var(--surface);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow);border:1px solid var(--line-2);position:relative;overflow:hidden}
+.kpi.clk{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.kpi.clk:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(20,40,70,.12)}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--brand))}
+.kpi.active{box-shadow:0 0 0 2px var(--c),0 8px 20px rgba(20,40,70,.10)}
+.kpi .n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:29px;line-height:1;letter-spacing:-.02em}
+.kpi .l{font-size:12px;color:var(--ink-2);margin-top:7px;font-weight:500}
+.kpi .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-3);margin-top:3px}
+
+.section-h{display:flex;align-items:baseline;gap:12px;margin:32px 0 15px}
+.section-h h2{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;letter-spacing:-.01em}
+.section-h .rule{flex:1;height:1px;background:var(--line)}
+.section-h .cnt{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-3)}
+
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-h{padding:16px 20px 0;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px}
+.panel-sub{padding:2px 20px 0;font-size:12px;color:var(--ink-3)}
+.panel-b{padding:16px 20px 20px}
+
+.bar-track{display:flex;flex-direction:column;gap:9px}
+.bar-item{cursor:pointer}
+.bar-item:hover .bk{color:var(--brand)}
+.bar-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.bk{font-size:12px;color:var(--ink-2);font-weight:500}
+.bv{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600}
+.bar-outer{background:var(--surface-2);border-radius:6px;height:14px;overflow:hidden;border:1px solid var(--line-2);margin-top:3px}
+.bar-fill{height:100%;border-radius:5px;transition:width .6s cubic-bezier(.2,.8,.2,1);min-width:2px}
+
+.donut-wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.donut-legend{display:flex;flex-direction:column;gap:9px;flex:1;min-width:150px}
+.leg{display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer}
+.leg:hover{color:var(--brand)}
+.leg .dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.leg .lv{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px}
+.leg .lp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-3);width:38px;text-align:right}
+
+.mensal{display:flex;align-items:flex-end;gap:6px;height:180px;padding-top:10px;overflow-x:auto}
+.mcol{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:34px;height:100%;justify-content:flex-end}
+.mbar{width:66%;max-width:34px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--brand),var(--brand-d));min-height:2px;transition:height .5s}
+.mval{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--ink-2)}
+.mlbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink-3);white-space:nowrap;text-align:center;line-height:1.3}
+
+.resolver{background:linear-gradient(180deg,var(--pend-l),var(--surface));border:1px solid #F2D3A8;border-left:5px solid var(--pend);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 22px;margin-top:15px}
+.resolver-h{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.resolver-h h3{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--pend)}
+.resolver-h .ct{margin-left:auto;font-family:'Space Grotesk';font-weight:700;font-size:22px;color:var(--pend)}
+.resolver-sub{font-size:12.5px;color:var(--ink-2);margin-bottom:12px}
+.resolver-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.resolver-item{background:var(--surface);border:1px solid #F2E0C8;border-radius:10px;padding:11px 14px;cursor:pointer;transition:transform .12s}
+.resolver-item:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(232,133,12,.14)}
+.ri-assunto{font-weight:600;font-size:12.5px;line-height:1.3}
+.ri-meta{font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'IBM Plex Mono'}
+.ri-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;margin-top:5px}
+.resolver-empty{font-size:13px;color:var(--conc);display:flex;align-items:center;gap:8px}
+.ag-group{margin-bottom:18px}
+.ag-group:last-child{margin-bottom:0}
+.ag-group-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.ag-group-dot{width:9px;height:9px;border-radius:50%}
+.ag-group-ct{margin-left:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-3);background:var(--surface-2);padding:1px 8px;border-radius:20px}
+.ag-card{display:flex;gap:14px;align-items:stretch;background:var(--surface);border:1px solid var(--line-2);border-radius:11px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.ag-card:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(20,40,70,.1);border-color:var(--brand)}
+.ag-cal{flex-shrink:0;width:56px;background:var(--brand-l);border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0}
+.ag-cal-d{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:var(--brand-d);line-height:1}
+.ag-cal-m{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--brand);margin-top:2px}
+.ag-main{flex:1;min-width:0}
+.ag-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:5px}
+.ag-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;margin-left:auto}
+.ag-assunto{font-weight:600;font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ag-timeline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px;font-size:11px;color:var(--ink-2)}
+.tl-step b{font-weight:600;color:var(--ink-3);font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;margin-right:3px}
+.tl-final{font-weight:700}
+.tl-arrow{color:var(--ink-3)}
+
+.filters{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow);display:flex;gap:11px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.05em}
+.field select,.field input{font-family:'Inter';font-size:13px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface-2);color:var(--ink);min-width:150px;cursor:pointer}
+.field input{min-width:220px;cursor:text}
+.field select:focus,.field input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+.btn-clear{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);font-weight:500;font-size:13px;padding:9px 14px;border-radius:var(--radius-s);cursor:pointer}
+.btn-clear:hover{background:var(--venc-l);border-color:var(--venc);color:var(--venc)}
+
+.table-panel{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-top:16px}
+.tbl-head,.trow{display:grid;grid-template-columns:150px 1.7fr 150px 150px 130px;gap:12px;align-items:center}
+.tbl-head{padding:13px 20px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+.trow{padding:12px 20px;border-bottom:1px solid var(--line-2);font-size:13px;cursor:pointer;transition:background .12s}
+.trow:hover{background:var(--surface-2)}.trow.open{background:var(--brand-l)}
+.t-proc{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-2)}
+.t-assunto{font-weight:600;font-size:12.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.t-sub{font-size:11px;color:var(--ink-3);margin-top:2px}
+.t-statuscell{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.t-exp{color:var(--ink-3);font-size:13px;transition:transform .2s}.trow.open .t-exp{transform:rotate(180deg);color:var(--brand)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.orgtag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--brand-l);color:var(--brand-d);white-space:nowrap}
+.trow-detail{display:none;padding:8px 20px 18px;background:var(--brand-l);border-bottom:1px solid var(--line-2)}
+.trow-detail.show{display:block}
+.det-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.det-item{background:var(--surface);border:1px solid var(--line-2);border-radius:9px;padding:10px 13px}
+.det-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);margin-bottom:4px}
+.det-val{font-size:12.5px;color:var(--ink);font-weight:500;word-break:break-word}
+.det-full{grid-column:1/-1}
+.table-empty{padding:56px 20px;text-align:center;color:var(--ink-3)}
+.table-empty b{display:block;font-family:'Space Grotesk';color:var(--ink-2);font-size:15px;margin-bottom:6px}
+.tbl-foot{padding:13px 20px;background:var(--surface-2);border-top:1px solid var(--line);font-size:12px;color:var(--ink-2);font-family:'IBM Plex Mono';display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.foot{margin-top:32px;text-align:center;font-size:12px;color:var(--ink-3);font-family:'IBM Plex Mono'}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:13px 22px;border-radius:var(--radius-s);font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .35s;z-index:99;font-weight:500}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}.cols2{grid-template-columns:1fr}
+  .tbl-head{display:none}.trow{grid-template-columns:1fr;gap:5px}.det-grid{grid-template-columns:1fr}}
+@media(max-width:560px){h1{font-size:22px}.kpis{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head-grid">
+    <div>
+      <div class="eyebrow">SES/DF · SUCONV · DIPREC</div>
+      <h1>Painel de<br>Representações</h1>
+      <p class="sub">Acompanhamento das representações e demandas de órgãos de controle — origem, andamento, prazos e o que ainda está pendente de resposta.</p>
+    </div>
+    <div class="head-right">
+      <button id="btn-refresh">↻ Atualizar</button>
+      <div class="src-label" id="src-label">dados embutidos</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <div id="proc-top"></div>
+
+  <div id="resolver-section"></div>
+
+  <div class="section-h"><h2>Panorama</h2><div class="rule"></div></div>
+  <div class="cols2">
+    <div class="panel">
+      <div class="panel-h">Por órgão de origem</div>
+      <div class="panel-sub">De onde vieram as representações · clique para filtrar</div>
+      <div class="panel-b"><div class="bar-track" id="chart-origem"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Situação</div>
+      <div class="panel-sub">Status das representações</div>
+      <div class="panel-b"><div class="donut-wrap"><div id="donut"></div><div class="donut-legend" id="donut-legend"></div></div></div>
+    </div>
+  </div>
+
+  <div class="cols2" style="margin-top:20px">
+    <div class="panel">
+      <div class="panel-h">Por parlamentar</div>
+      <div class="panel-sub">Emendas relacionadas · clique para filtrar</div>
+      <div class="panel-b"><div class="bar-track" id="chart-parl"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Respostas por mês</div>
+      <div class="panel-sub">Representações encaminhadas/respondidas em cada mês</div>
+      <div class="panel-b"><div class="mensal" id="chart-mensal"></div></div>
+    </div>
+  </div>
+
+  <div id="agenda-section"></div>
+
+  <div id="proc-bottom"></div>
+  <div id="processos-block">
+  <div class="section-h"><h2>Representações</h2><div class="rule"></div><span class="cnt" id="tbl-count"></span></div>
+  <div class="filters">
+    <div class="field"><label>Status</label><select id="f-status"></select></div>
+    <div class="field"><label>Órgão de origem</label><select id="f-origem"></select></div>
+    <div class="field"><label>Emenda</label><select id="f-emenda"></select></div>
+    <div class="field"><label>Parlamentar</label><select id="f-parl"></select></div>
+    <div class="field"><label>Buscar</label><input type="text" id="f-busca" placeholder="assunto, processo, OSC…"></div>
+    <button class="btn-clear" id="f-clear">Limpar filtros</button>
+  </div>
+  <div class="table-panel" id="table"></div>
+  </div>
+  <div class="foot">Painel de Representações · SUCONV/DIPREC · dados atualizáveis pela planilha</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let RAW=[{"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00003291/2026-67", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "31/03/2026 SUCONV", "Nº DECISÃO": "715/2026", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00002022/2026-83-e", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Representação ofertada pelo Deputado Federal Rafael Prudente, versando acerca de supostas irregularidades relacionadas à execução dos projetos “Em um Piscar de Olhos” e “Restaurando Sorrisos”", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "Instituto Elisedape", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "200541212.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Despacho à ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 200600398", "DATA ENCAMINHAMENTO": "2026-04-23", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00002628/2026-19", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "17/03/2025 SUCONV", "Nº DECISÃO": "577/2026", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011370/2025-61-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Possíveis irregularidades na destinação de recursos de emenda parlamentar de autoria do então Deputado Federal Gilvan Máximo.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Gilvan Máximo", "Destinação (OSC)": "Instituto de Inovação Impulsionar", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "198411816.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Despacho à ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 198478646", "DATA ENCAMINHAMENTO": "2026-03-24", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00002122/2026-18", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "06/03/2026 SUCONV", "Nº DECISÃO": "416/2026", "Nº AUDITORIA": "19857 (DENASUS)", "PROCESSO TCDF/TCU": "00600-00013759/2024-60-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Comunicação do Tribunal sobre Decisão nº 416/2026 proferida.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Alberto Fraga", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "DIMACP remeteu as suas gerências", "Nº Documento de Resposta (SUCONV)": "196892547.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Despacho DIMACP", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 197564489", "DATA ENCAMINHAMENTO": "2026-03-16", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00001934/2026-38", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "03/03/2026 SUCONV", "Nº DECISÃO": "267/2026", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00014971/2024-44-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Representação nº 82/2024-G2P, com pedido de medida cautelar, formulada pela Procuradora do Ministério Público junto ao Tribunal, Cláudia Fernanda de Oliveira Pereira, em virtude de possíveis irregularidades no planejamento de termo de fomento a ser firmado entre a Secretaria de Estado de Saúde do Distrito Federal – SES/DF e o Instituto Elisedape no denominado “Projeto em um Piscar de Olhos”", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "Instituto Elisedape", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV notificou o Instituto Elisedape, por intermédio do Ofício nº 8/2026 – SES/SECCIC/SUCONV/GAEP/CPGP (198655333)", "Nº Documento de Resposta (SUCONV)": "197263936.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Gabinete oficiou o TCDF", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 565 (199126224)", "DATA ENCAMINHAMENTO": "2026-03-31", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00103140/2026-62", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "03/03/2026 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "Câmara dos Deputados", "ASSUNTO": "Solicitação de fiscalização de supostas irregularidades e suspensão temporária do CONVÊNIO TRANSFEREGOV.BR Nº 972857.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "Instituto Elisedape", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "DIMACP respondeu por meio do Despacho 196966373", "Nº Documento de Resposta (SUCONV)": "197331377.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Gabinete oficiou a Câmara", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 1710 (197801457)", "DATA ENCAMINHAMENTO": "2026-03-17", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00000871/2026-01", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "02/03/2026 SUCONV", "Nº DECISÃO": "DESPACHO SINGULAR Nº 19/2026 - GDCMM", "Nº AUDITORIA": "Relatório RELATÓRIO PRÉVIO DE AUDITORIA (193982859)", "PROCESSO TCDF/TCU": "00600-00010009/2024- 36-e", "REPRESENTAÇÃO": "TCDF", "ASSUNTO": "Despacho Singular nº 19/2026 - GDCMM. Auditoria Operacional. Organização e funcionamento das Redes de Atenção à Saúde do Distrito Federal.", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "DIPREC respondeu á ASDOC e SEECCIC o que a unidade foi criada posteriormente ao período fiscalizado e, portanto, não participou dos fatos auditados.", "Nº Documento de Resposta (SUCONV)": "196277021.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Despacho á ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 196277021", "DATA ENCAMINHAMENTO": "2026-03-02", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00017824/2026-42", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "13/01/2026 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "19857.0", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "DENASUS", "ASSUNTO": "​Solicitação de dilação de prazo para apresentação das considerações necessárias para o saneamento da demanda referente a notificação para devolução de valores ao FNS/SE/MS", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Alberto Fraga", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Emissão de pedido de reconsideração por parte da SES, tendo em vista o saneamento das inconsistencias", "Nº Documento de Resposta (SUCONV)": "193024906.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "CGPO/SAES - MS", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício Nº 613/2026", "DATA ENCAMINHAMENTO": "2026-01-23", "OBSERVAÇÃO": "", "STATUS": "Pendente"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00012312/2026-90", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "23/01/2026 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "OUV-000242/2026", "ASSUNTO": "Resposta a manifestação registrada na Ouvidoria da Secretaria de Estado de Saúde do DF.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "IBSAUDE", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu á Coordenação de Atenção Secundária e Integração de Serviços (SES/SEAS/SAIS/COASIS) resposta da OSC orientando á reclamante.", "Nº Documento de Resposta (SUCONV)": "197950323.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Coordenação de Atenção Secundária e Integração de Serviços (SES/SEAS/SAIS/COASIS)", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 197950323", "DATA ENCAMINHAMENTO": "2026-03-19", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00000871/2026-01", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "02/03/2026 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "Relatório RELATÓRIO PRÉVIO DE AUDITORIA (193982859)", "PROCESSO TCDF/TCU": "00600-00010009/2024- 36-e", "REPRESENTAÇÃO": "TCDF e TCU", "ASSUNTO": "Auditoria Operacional TCU + TCDF - Organização e funcionamento das Redes de Atenção à Saúde do Distrito Federal", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "DIPREC respondeu á ASDOC e SEECCIC o que a unidade foi criada posteriormente ao período fiscalizado e, portanto, não participou dos fatos auditados.", "Nº Documento de Resposta (SUCONV)": "196277021.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ASDOC e SECCIC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 196277021", "DATA ENCAMINHAMENTO": "2026-03-05", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00016126/2025-94", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "17/12/2025 SUCONV", "Nº DECISÃO": "4780/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00008452/2024-47-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Ofício nº 11215/2025-GP. Decisão nº 4780/2025.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "Associação Beneficente Cisne – Instituto Cisne", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV comunicou à DIPREC e à DIMACP que enviaram as suas gerências e comissões.", "Nº Documento de Resposta (SUCONV)": "190306903.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "DIMACP E DIPREC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 190043841", "DATA ENCAMINHAMENTO": "2025-12-17", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0164899/2025-98", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "15/12/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "MPDFT", "ASSUNTO": "Ofício nº 4337/2025 - 2ª PROSUS. Procedimento Preparatório nº 08192.160857/2025-46.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Bancada", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "A demanda foi atendida pela Coordenação de Atenção Secundária e Integração de Serviços.", "Nº Documento de Resposta (SUCONV)": "190451053.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 190527468", "DATA ENCAMINHAMENTO": "2025-12-23", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00015694/2025-78", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "10/12/2025 SUCONV", "Nº DECISÃO": "4704/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00014497/2024-51-e", "REPRESENTAÇÃO": "78/2024 (Ministério Público de Contas)", "ASSUNTO": "Ofício nº 11042/2025-GP. Decisão nº 4704/2025. Processo nº 00600-00014497/2024-51-e", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV comunicou à DIPREC, à DIMACP e à DIPCP que enviaram as suas gerências e comissões.", "Nº Documento de Resposta (SUCONV)": "190309291.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "DIMACP, DIPREC e DIPCP", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 190013035", "DATA ENCAMINHAMENTO": "2025-12-16", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00580387/2025-18", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "16/12/2025 SUCONV", "Nº DECISÃO": "Acórdão 2708/2025-TCU", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "026.227/2024-0", "REPRESENTAÇÃO": "TCU", "ASSUNTO": "Oficio 50181/202S-TCU/Seproc. Notificação de acórdão. Anexos: peças 23, 27 e 28 do processo TC026.227/2024-0.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "Associação Beneficente Cisne (Instituto Cisne de Pesquisa; CNPJ 56.322.696/0002-08)", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV comunicou à DIPREC, à DIMACP e à DIPCP.", "Nº Documento de Resposta (SUCONV)": "189999494.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "DIMACP, DIPREC e DIPCP", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 189999494", "DATA ENCAMINHAMENTO": "2025-12-16", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00015327/2025-74", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "01/12/2025 SUCONV", "Nº DECISÃO": "4670/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011571/2025-68-e", "REPRESENTAÇÃO": "67/2025 (Ministério Público de Contas)", "ASSUNTO": "Decisão nº 4670/2025 (188626452) possíveis irregularidades na parceria a ser firmada com o Instituto Brasileiro de Saúde, Ensino, Pesquisa e Extensão para o Desenvolvimento Humano – IBSAÚDE", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Alberto Fraga", "Destinação (OSC)": "IBSAUDE", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV comunicou à DIPREC que efetuou diligência e respondeu á ASDOC.", "Nº Documento de Resposta (SUCONV)": "189508507.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 189508507", "DATA ENCAMINHAMENTO": "2025-12-10", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00014627/2025-36", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "17/11/2025 SUCONV", "Nº DECISÃO": "4412/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011370/2025-61-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Ofício nº 10178/2025-GP. Decisão nº 4412/2025.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Gilvan Máximo", "Destinação (OSC)": "Instituto Inovação Impulsionar", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu à DIPREC que efetuou diligência e respondeu á ASDOC.", "Nº Documento de Resposta (SUCONV)": "187513113.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 188704140", "DATA ENCAMINHAMENTO": "2025-12-02", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00014400/2025-91", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "12/11/2025 SUCONV", "Nº DECISÃO": "4142/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011484/2025-19-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Ofício nº 9902/2025-GP. Decisão nº 4142/2025", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Gilvan Máximo", "Destinação (OSC)": "Organização da Sociedade Civil Beneficência Hospitalar de Cesário Lange", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "ASDOC remeteu á SUCONV e DIPREC. Esta útilma realizaou diligência e respondeu à ASDOC.", "Nº Documento de Resposta (SUCONV)": "187355258.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 187355258", "DATA ENCAMINHAMENTO": "2025-11-14", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00012761/2025-01", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "13/10/2025 SUCONV", "Nº DECISÃO": "3707/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011127/2024-61-e", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício-Circular nº 5/2025-GP - Implementação da gestão de riscos nos órgãos e entidades que compõem o Complexo Administrativo do Governo do Distrito Federal", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu à DIPREC, à DIMACP e à DIPCP e enviou manifestação da DIPCP á ASDOC.", "Nº Documento de Resposta (SUCONV)": "184441549.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 184441549", "DATA ENCAMINHAMENTO": "2025-10-14", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00020-00054536/2025-37", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "14/10/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "PGDF", "ASSUNTO": "Contratos administrativos. Programa de integridade. Contratações de grande vulto.", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu à DIPREC , à DIMACP e à DIPCP que enviaram as suas gerências e comissões para ciência.", "Nº Documento de Resposta (SUCONV)": "184922283.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "SUCONV comunicou à DIPREC , à DIMACP e à DIPCP.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 184890924", "DATA ENCAMINHAMENTO": "2025-10-19", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00475533/2025-94", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "07/10/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "CGDF", "ASSUNTO": "Orientações que contemplam ações de controle da Controladoria-Geral do Distrito Federal (CGDF).", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu à DIPREC, à DIMACP e à DIPCP e as duas primeiras enviaram ás suas gerências e comissões.", "Nº Documento de Resposta (SUCONV)": "183877528.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "SUCONV comunicou à DIPREC , à DIMACP e à DIPCP.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 183853560", "DATA ENCAMINHAMENTO": "2025-10-07", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00012320/2025-09", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "29/09/2025 SUCONV", "Nº DECISÃO": "3714/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011571/2025-68-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Ofício nº 8374/2025-GP", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Alberto Fraga", "Destinação (OSC)": "IBSAUDE", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu á SEGEA, SECCIC, SEAS e ARINS e tramitou á DIPREC", "Nº Documento de Resposta (SUCONV)": "183245966.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "DIPREC diligênciou e remeteu á SECCIC.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 183245966", "DATA ENCAMINHAMENTO": "2025-10-01", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00012313/2025-07", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "26/09/2025 DIPREC", "Nº DECISÃO": "3713/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011484/2025-19-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Ofício nº 8368/2025-GP - Decisão nº 3713/2025 - Processo nº 00600-00011484/2025-19-e.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Gilvan Máximo", "Destinação (OSC)": "Organização da Sociedade Civil Beneficência Hospitalar de Cesário Lange", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "DIPREC recebeu o processo e efetuou diligência, posteriormente respondeu ao Gab DF", "Nº Documento de Resposta (SUCONV)": "182996968.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "A DIPREC encaminhou ao GAB resposta às solicitações recebidas em decorrência da diligência.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 182996968", "DATA ENCAMINHAMENTO": "2025-09-29", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00461918/2025-74", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "01/12/2025 SUCONV", "Nº DECISÃO": "4670/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00011571/2025-68-e", "REPRESENTAÇÃO": "Ministério Público de Contas 67/2025-G2P", "ASSUNTO": "Decisão nº 4670/2025 (188626452)", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Alberto Fraga", "Destinação (OSC)": "IBSAUDE", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu á DIPREC que realizou diligência e respondeu á ASDOC", "Nº Documento de Resposta (SUCONV)": "186286537.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "A DIPREC encaminhou à ASDOC resposta às solicitações recebidas em decorrência da diligência.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 189508507", "DATA ENCAMINHAMENTO": "2025-12-10", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00459299/2025-58", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "26/09/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "Justiça do Trabalho", "ASSUNTO": "Mandado de Penhora", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "Instituto Elisedape", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu os autos à DIPREC que o concluiu por não haver providências a serem tomada na diretoria.", "Nº Documento de Resposta (SUCONV)": "183405773.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Mandado acolhido porém até a presente data não houve repesses desta SES para o Instituto que possibilitasse a execução.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Registro 183405773", "DATA ENCAMINHAMENTO": "2025-10-02", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00452469/2025-73", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "23/09/2025 SUCONV", "Nº DECISÃO": "Despacho Singular nº 512/2025-IM", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600- 00011370/2025-61-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Despacho Singular nº 512/2025-IM (MPCDF)", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Gilvan Máximo", "Destinação (OSC)": "Instituto Inovação Impulsionar", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu á DIPREC e á DIPCP que realizou diligência e respondeu ao GAB", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Resposta ao Gab", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 182661936", "DATA ENCAMINHAMENTO": "2025-09-24", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00011630/2025-06", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "12/09/2025 SUCONV", "Nº DECISÃO": "3451/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "10808/2018-e", "REPRESENTAÇÃO": "Ministério Público de Contas", "ASSUNTO": "Possível superfaturamento em contratos emergenciais firmados pela Secretaria de Estado de Saúde do Distrito Federal – SES/DF", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV comunicou à DIPREC, à DIMACP e à DIPCP que enviaram as suas gerências e comissões.", "Nº Documento de Resposta (SUCONV)": "181692185.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Ciência", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 181564866", "DATA ENCAMINHAMENTO": "2025-09-12", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00391600/2025-19", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "08/08/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício nº 107/2025 - Deputado Rafael Prudente - Solicitação de Fiscalização de Supostas Irregularidades e Suspensão Temporária do Instrumento - Projeto Restaurando Sorrisos - Instituto IBSAÚDE", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "IBSAUDE", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu à DIMAP que por sua vez enviou á DIPREC .", "Nº Documento de Resposta (SUCONV)": "181219581.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "DIPREC respondeu á SUCONV que ha outro processo sobre o mesmo assunto e este seria concluido.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 179199143", "DATA ENCAMINHAMENTO": "2025-08-19", "OBSERVAÇÃO": "", "STATUS": "Em diligência"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00388636/2025-15", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "12/08/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício nº 107/2025. Solicitação de fiscalização de supostas irregularidades e suspensão temporária do CONVÊNIO TRANSFEREGOV.BR Nº 972857.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "Rafael Prudente", "Destinação (OSC)": "IBSAUDE", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SUCONV remeteu à DIMAP que notificou o IBSAÚDE", "Nº Documento de Resposta (SUCONV)": "183385909.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "DIPREC encaminhou a DIMACP para análise e providencia", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "", "DATA ENCAMINHAMENTO": "", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00363497/2025-17", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2025-07-22", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "19857.0", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "DENASUS", "ASSUNTO": "Relatório Final da Auditoria sobre aplicação da emenda federal no Termo de Fomento nº 07/2024 – Projeto A Tenda +", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "ALBERTO FRAGA", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Encaminhamento diversas áreas da SES para ciencia do relatorio final de Auditoria", "Nº Documento de Resposta (SUCONV)": "180813157.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ÀO DENASUS copia do relatorio de auditoria e resposta da OSC sobre a auditoria", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício Nº 7216/2025 - SES/GAB (180757737)", "DATA ENCAMINHAMENTO": "2025-08-29", "OBSERVAÇÃO": "Resposta enviada por meio do Processo SEI n° 00060-00416243/2025-17", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00020-00036720/2025-03", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2025-07-04", "Nº DECISÃO": "2285/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00005016/2024-16-e", "REPRESENTAÇÃO": "22/2024 – G2P", "ASSUNTO": "acerca de possíveis irregularidades na contratação de 11 tendas e prestação de serviço de atendimento e hidratação de pacientes acometidos pela dengue e outras arboviroses", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Encaminhamento às áreas técnicas para ciência e adoção de providências quanto à decisão do TCDF, com orientação para adequação dos instrumentos (ETP e TR) e observância da legislação aplicável.", "Nº Documento de Resposta (SUCONV)": "178160625.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "À PGDF com as providências adotadas pela SES", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 13 (185097381)", "DATA ENCAMINHAMENTO": "2025-10-21", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00007166/2025-45", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2025-09-05", "Nº DECISÃO": "1718/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00001757/2023-47-e", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Encaminhamento de decisão do TCDF referente à auditoria em parcerias MROSC, com determinação de monitoramento e adoção de providências pelos órgãos do GDF", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Encaminhamento interno para ciência das recomendações a áreas competentes, sem determinação de resposta formal imediata ao TCDF", "Nº Documento de Resposta (SUCONV)": "182281428.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "À SUCONV E SECCIC para ciencia da decisão", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "NÃO SE APLICA", "DATA ENCAMINHAMENTO": "NÃO SE APLICA", "OBSERVAÇÃO": "A demanda teve caráter meramente informativo, não havendo necessidade de resposta formal ao órgão de controle, apenas ciência", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00006559/2025-31", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2025-06-23", "Nº DECISÃO": "1934/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00015665/2024-25-e", "REPRESENTAÇÃO": "83/2024 – G2P - MPC-DF", "ASSUNTO": "sobre possíveis irregularidades em repasses de emenda federal ao TF nº 03/2024 (Instituto Cisne)", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "GILVAN MAXIMO", "Destinação (OSC)": "Associação Beneficente Cisne – Instituto Cisne (com posterior remanejamento para IBSAÚDE e outra OSC)", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Às áreas técnicas da SES (SAIS e CFPAS-MROSC) para esclarecimentos sobre irregularidades no termo de fomento com IBSAÚDE (capacidade técnica, MROSC/SUS, UOMs, planejamento, plano/cronograma) + acesso ao SEI 00060-00447669/2024-23", "Nº Documento de Resposta (SUCONV)": "195175805.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "ao TCDF com manifestação das áreas envolvidas", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 8877 (183826759)", "DATA ENCAMINHAMENTO": "2025-10-07", "OBSERVAÇÃO": "Destaca-se que a SUCONV não participou das tratativas originais, em razão de sua criação posterior, limitando-se à atuação de apoio técnico e institucional no cumprimento das determinações do Tribunal", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00254069/2025-02", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "29/07/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "19857.0", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "DENASUS", "ASSUNTO": "Apuração da regularidade da aplicação de recursos federais oriundos de emenda parlamentar no Termo de Fomento nº 07/2024", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "ALBERTO FRAGA", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Às áreas técnicas da SES (SAIS, CONT, GACIC e demais unidades envolvidas) para instrução dos autos e subsídio à resposta ao órgão auditor.", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "À MS com manifestação preliminar das áreas envolvidas", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofícios nº 4396/2025-SES/DF (177632936) e nº 5973/2025-SES/DF (177638012)", "DATA ENCAMINHAMENTO": "2025-07-29", "OBSERVAÇÃO": "SES reconhece limitações no escopo das unidades, presta esclarecimentos aos achados e informa que a análise ainda está em curso, com prestação de contas dentro do prazo. Indica também adoção de medidas estruturantes (fluxos MROSC) e necessidade de complementação por outras áreas, mantendo caráter não conclusivo.", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00020-00023757/2025-63", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-03-04", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "TCU - 026.225/2024-7", "REPRESENTAÇÃO": "", "ASSUNTO": "Representação do MPTCU (Júlio Marcelo de Oliveira) aponta indícios de irregularidades na formulação e execução do Termo de Fomento nº 02/2024, no âmbito do DF, com determinação de oitiva e realização de diligências para apuração dos fatos.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "GILVAN MAXIMO", "Destinação (OSC)": "IBRAS", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Encaminhamento de processo ao grupo de trabalho do MROSC para análise e apresentação de contribuições da área da saúde, conforme demandas discutidas em reunião.", "Nº Documento de Resposta (SUCONV)": "195176300.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "SEEC/SGE/SUPPE/UGPAR", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 9 (195176300)", "DATA ENCAMINHAMENTO": "2026-02-18", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00004927/2025-15", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2025-05-06", "Nº DECISÃO": "4483/2024", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00013759/2024-60-e", "REPRESENTAÇÃO": "70/2024-G2P e 78/2024 – G2P", "ASSUNTO": "Inspeção do TCDF para verificar possíveis falhas na celebração do Termo de Fomento nº 07/2024 (Projeto A Tenda + – Hospital São Mateus).", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "ALBERTO FRAGA", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Encaminhamento interno às unidades da SES para disponibilização de informações, documentos e suporte à equipe de auditoria do TCDF durante a inspeção.", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Às Subsecretarias e áreas técnicas (SAG, SAA, SUAG, SAIS, SUCOMP, USCI e demais unidades) para ciência e apoio à fiscalização", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Não houve resposta da SES ao órgão de controle (processo recebido apenas para ciência)", "DATA ENCAMINHAMENTO": "NÃO SE APLICA", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00125200/2025-17", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2025-03-18", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "2025-01-01", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "COMUNICADO DE AUDITORIA Nº 01/2025 (165161694), do Departamento Nacional de Auditoria do SUS (DenaSUS), que solicita informações/documentos, referentes à Auditoria nº 19857.", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "ALBERTO FRAGA", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Elaboração de resposta técnica pela SES com indicação de pareceres, despachos e documentos que comprovam a adequação do plano de trabalho às diretrizes do SUS e à legislação do MROSC", "Nº Documento de Resposta (SUCONV)": "168010112.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Encaminhado à SAA, CRDF e CFPAS/MROSC, com ciência à SAGOV e USCI, para atendimento das demandas do órgão de controle no prazo, com orientação de justificativa em caso de impossibilidade.", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 2761 (168010112)", "DATA ENCAMINHAMENTO": "2025-04-09", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00094185/2025-58", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "02/09/2025 DIPREC", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "Notícia de Fato 1.16.000.003044/2024-51", "ASSUNTO": "MPF requisita esclarecimentos sobre execução do projeto, aplicação de recursos de emenda parlamentar, fiscalização da SES/DF, transparência e prestação de contas. Projeto ''Minha Saúde''", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "GILVAN MAXIMO", "Destinação (OSC)": "IBRAS", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Em relação à Decisão nº 108/2025, a SES/DF prestou esclarecimentos técnicos e jurídicos ao TCDF, com envio de informações sobre preços, experiência da OSC, integração de sistemas e execução do TF nº 07/2024. Quanto à Decisão nº 620/2025, as áreas técnicas tomaram ciência e informaram não haver novas providências, mantendo apenas o acompanhamento do processo", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Manifestações das Áreas técnicas", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 2175 (166207079)", "DATA ENCAMINHAMENTO": "2025-03-21", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00000731/2025-43", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "02/09/2025 DIPREC", "Nº DECISÃO": "Decisão nº 108/2025; Decisão nº 620/2025", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "00600-00013759/2024-60-e", "REPRESENTAÇÃO": "TCDF", "ASSUNTO": "Questionamentos sobre a regularidade do TF nº 07/2024, com determinação de esclarecimentos, fiscalização e posterior continuidade da análise pelo TCDF", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "ALBERTO FRAGA", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "SES prestou esclarecimentos ao TCDF e, após nova decisão, manteve apenas o acompanhamento do processo.", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "Ofício ao TCDF", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 1289 (163437864)", "DATA ENCAMINHAMENTO": "2025-02-17", "OBSERVAÇÃO": "análise de merito sobrestada até deslinde dos estudos especiais de que trata o Processo nº 00600-00000972/2026-73-e", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00053870/2025-24", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "05/09/2025 DIPREC", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "19857.0", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "DENASUS", "ASSUNTO": "Auditoria sobre execução física e financeira da parceria TF 07/2024", "EMENDA (FEDERAL/DISTRITAL)": "FEDERAL", "PARLAMENTAR": "ALBERTO FRAGA", "Destinação (OSC)": "Hospital São Mateus", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "Encaminhado às áres para designar servidores dessa SES e do Hospital São Mateus, responsáveis pelo acompanhamento do TF 7/2024 para acompanhar a visita técnica", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "GAB encaminhou oficio para MS", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 1130 (162922986)", "DATA ENCAMINHAMENTO": "2025-03-05", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00020-00003661/2025-89", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "14/03/2026 SUCONV", "Nº DECISÃO": "ADPF 854", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "ADPF 854/DF. Decisão sobre execução de emendas parlamentares destinadas a entidades do terceiro setor – STF.ADPF", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "encaminhado as diretorias e gerencias para ciencia", "Nº Documento de Resposta (SUCONV)": "197610715.0", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "encaminhado as diretorias e gerencias para ciencia", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho 197535405", "DATA ENCAMINHAMENTO": "2026-03-14", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00030441/2025-89", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "23/09/2025 SUCONV", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "028.984/2024-2", "REPRESENTAÇÃO": "TCU", "ASSUNTO": "Fiscalização TCU sobre termos de fomento da SES/DF com emendas federais RP-6: questiona inadequação do instrumento (Lei 13.019/2014), falta de estrutura das OSCs e determina diligência para apresentação de dados, planos de trabalho e contas.", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "diligencia à diversas áreas da SES para manifestação", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "gabinete encaminhou oficio para TCU", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 1247 (163319443)", "DATA ENCAMINHAMENTO": "2025-02-14", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00544206/2024-17", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "05/09/2025 DIPREC", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "CRM-DF", "ASSUNTO": "Relatório de Vistoria nº1182/2024-DEFIS - Interdição ética do projeto \"Minha Saúde - Caravana de Saúde da Família\" pelo CRM.", "EMENDA (FEDERAL/DISTRITAL)": "NÃO SE APLICA", "PARLAMENTAR": "NÃO SE APLICA", "Destinação (OSC)": "IBRAS", "PRAZO INTERNO": "", "PRAZO FINAL": "", "PROVIDENCIA ADOTADA": "diligencia à OSC IBRAS, CRM e comissão fiscalizadora (CFPAS-MROSC)", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "", "ENCAMINHAMENTO": "gabinete encaminhou a PGDF", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Ofício 174 (160256174)", "DATA ENCAMINHAMENTO": "2025-01-09", "OBSERVAÇÃO": "00060-00482177/2024-84 - PROCESSO ORIGINÁRIO", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00260494/2026-11", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "26/05/2026 (ASDOC/SES)", "Nº DECISÃO": "DESPACHO SINGULAR N.º 199/26-GCAC Decisão 237/2026 - relacioando a concessão de prorrogação de prazo", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "00600-00005743/2026-45-e", "REPRESENTAÇÃO": "TCDF", "ASSUNTO": "Cuidam os autos da RepresentaÁ„o n.º 30/2026-G2P, do MinistÈrio P˙blico junto ao Tribunal de Contas do Distrito Federal – MPjTCDF, com o objetivo de apurar supostas irregularidades relacionadas formalizaÁ„o do Termo de Fomento n.º 031000/2026-SES/DF (TF-1- SES/2026, conforme a Plataforma MROSC1 ), celebrado entre a Secretaria de Estado de Sa˙de do Distrito Federal – SES/DF e o Instituto Brasileiro de Conectividade Social – IBCS, para execução do projeto “Além do Olhar”, no valor de R$ 2.000.000,00 (peÁa 3).", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "IBCS", "PRAZO INTERNO": "2026-06-17", "PRAZO FINAL": "2026-07-06", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-07-03", "ENCAMINHAMENTO": "resposta - Diligência 5 ({230304359) encaminhado a SECCIC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "", "DATA ENCAMINHAMENTO": "", "OBSERVAÇÃO": "Pendente encaminhamento ao TCDF", "STATUS": "Pendente"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00006215/2026-11", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-05-26", "Nº DECISÃO": "Despacho 231/2026-IM", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "00600-00005805/2026-19-e https://etcdf.tc.df.gov.br/?a=consultaETCDF&f=formPrincipal&nrproc=5805&anoproc=2026", "REPRESENTAÇÃO": "31/2026-G2P MPC", "ASSUNTO": "Ofício 4183/2026-GP – Despacho 231/2026-IM: esclarecimentos sobre Representação 31/2026-G2P (conflito de interesses/IEV)", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-12", "PRAZO FINAL": "2026-06-12", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "205740859.0", "DATA RESPOSTA": "2026-06-15", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 3/2026 - SES/SECCIC/SUCONV/DIPREC", "DATA ENCAMINHAMENTO": "2026-06-15", "OBSERVAÇÃO": "secretaria de acompanhamentos TCDF em 16/06/2026", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00006053/2026-11", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-05-21", "Nº DECISÃO": "Despacho Singular nº 229/2026-IM", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "00600-00005737/2026-98-e https://etcdf.tc.df.gov.br/?a=consultaETCDF&f=formPrincipal&nrproc=5737&anoproc=2026", "REPRESENTAÇÃO": "28/2026-G2P MPC", "ASSUNTO": "Representação 28/2026-G2P – Convênio 030989/2026-SES/DF (ISHP): 36.000 OCIs em Oftalmologia – R$ 8.532.671,65", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-08", "PRAZO FINAL": "2026-06-08", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "205386494.0", "DATA RESPOSTA": "2026-06-09", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 4/2026 - SES/SECCIC/SUCONV/DIPREC", "DATA ENCAMINHAMENTO": "2026-06-09", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0070992/2026-04", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício 1848/2026 – 4ª PROSUS: esclarecimentos sobre Convênio 030989/2026 (ISHP) – OCIs em Oftalmologia", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-15", "PRAZO FINAL": "2026-06-08", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "2026-06-10", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 12/2026 - SES/SECCIC/SUCONV/DIPREC", "DATA ENCAMINHAMENTO": "2026-06-10", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0071002/2026-25", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício 1847/2026 – 4ª PROSUS: justificativas técnicas para contratação via convênio vs. Prog. Mais Acesso/MS (ISHP)", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-18", "PRAZO FINAL": "2026-06-24", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "2026-06-30", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 2/2026 - SES/SECCIC/SUCONV", "DATA ENCAMINHAMENTO": "2026-06-30", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0071027/2026-29", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício 1851/2026 – 4ª PROSUS: justificativas técnicas para contratação via fomento (IBCS)", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-16", "PRAZO FINAL": "2026-06-30", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "2026-07-03", "ENCAMINHAMENTO": "encaminhado a SUCONV", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 4/2026 - SES/SECCIC/SUCONV/DIPREC", "DATA ENCAMINHAMENTO": "2026-07-03", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00006145/2026-93", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-05-26", "Nº DECISÃO": "Despacho Singular n.º 230/2026 – GCIM, referendado pela Decisão n.º 1.578/2026", "Nº AUDITORIA": "NÃO SE APLICA", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "MPCDF 32/2026 – G2P", "ASSUNTO": "Representação 32/2026-G2P – Termo de Fomento 030995/2026 (ADRA Centro-Oeste) – R$ 500.000,00 – pilates/atividades físicas", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-10", "PRAZO FINAL": "2026-06-10", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "205485177.0", "DATA RESPOSTA": "2026-06-11", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 5/2026 - SES/SECCIC/SUCONV/DIPREC", "DATA ENCAMINHAMENTO": "2026-06-11", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00260494/2026-11", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "30/2026-G2P", "ASSUNTO": "Ofício 4118/2026-GP – Despacho 199/26-GCAC: Representação 30/2026-G2P – TF 031000/2026 (IBCS) – Projeto Além do Olhar – R$ 2.000.000,00", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-17", "PRAZO FINAL": "2026-07-06", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "NÃO SE APLICA", "DATA RESPOSTA": "2026-07-03", "ENCAMINHAMENTO": "encaminhado resposta a SECCIC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 5/2026 - SES/SECCIC/SUCONV/DIPREC", "DATA ENCAMINHAMENTO": "2026-07-03", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00006408/2026-64", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-06-25", "Nº DECISÃO": "Despacho Singular nº 247/2026-GCIM", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "00600-00011370/2025-61-e", "REPRESENTAÇÃO": "64/2025-G2P", "ASSUNTO": "Ofício 4226/2026-G2P – Representação 64/2025-G2P: emenda parlamentar Dep. Gilvan Máximo – Instituto Impulsionar", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-16", "PRAZO FINAL": "2026-06-24", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "206917864.0", "DATA RESPOSTA": "2026-06-23", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 1/2026 - SES/SECCIC/SUCONV", "DATA ENCAMINHAMENTO": "2026-06-23", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00006285/2026-61", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-05-29", "Nº DECISÃO": "NÃO SE APLICA", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "NÃO SE APLICA", "REPRESENTAÇÃO": "MPCDF 329/2026-G2P", "ASSUNTO": "Ofício 329/2026-G2P – MPCDF solicita informações e documentos referentes às celebrações na SUCONV", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-09", "PRAZO FINAL": "2026-06-09", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "204552856.0", "DATA RESPOSTA": "2026-06-15", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV (205719463)", "DATA ENCAMINHAMENTO": "2026-06-15", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00297495/2026-11", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "Decisão nº 1330/2026", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "00600-00011571/2025-68-e", "REPRESENTAÇÃO": "TCDF nº 67/2025 – G2P", "ASSUNTO": "Ofício nº 3594/2026-GP , TCDF atraves da Decisão nº 1330/2026 , referente à Representação nº 67/2025 – G2P, Instituto Brasileiro de Saúde, Ensino, Pesquisa e Extensão para o Desenvolvimento Humano – IBSAÚDE", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-19", "PRAZO FINAL": "2026-06-19", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "206299668.0", "DATA RESPOSTA": "2026-06-19", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Diligência n.º 13/2026 - SES/SECCIC/SUCONV/DIPREC", "DATA ENCAMINHAMENTO": "2026-06-19", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0095778/2026-82", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-06-19", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício 1836/2026 – 2ª PROSUS: links de acesso aos Processos SEI referentes às contratações pela Secretaria de Saúde de Oferta de Cuidado Integral - OCI em Cardiologia", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-19", "PRAZO FINAL": "2026-06-19", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "206250115.0", "DATA RESPOSTA": "2026-06-19", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV (206250115)", "DATA ENCAMINHAMENTO": "2026-06-19", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0095538/2026-63", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-06-23", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício 1824/2026 – 2ª PROSUS: links de acesso aos Processos SEI referentes às contratações pela Secretaria de Saúde de Oferta de Cuidado Integral - OCI em Ortopedia", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-06-26", "PRAZO FINAL": "2026-06-20", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "206958320.0", "DATA RESPOSTA": "2026-06-26", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV/DIPREC (206970626)", "DATA ENCAMINHAMENTO": "2026-06-26", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0118139/2026-63", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-07-02", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício 2165/2026 – 2ª PROSUS: links de acesso aos Processos SEI referentes às contratações pela Secretaria de Saúde de Oferta de Cuidado Integral - OCI 00060-0002948/2026- 23, 00060-00066040/2026-48, 00060-00003072/2026-32 e 00600-00006215/2026-11", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-07-03", "PRAZO FINAL": "2026-07-03", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "207460382.0", "DATA RESPOSTA": "2026-07-03", "ENCAMINHAMENTO": "encaminhado resposta a SECCIC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV (207460382)", "DATA ENCAMINHAMENTO": "2026-07-03", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.4894.0122738/2026-45", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-07-13", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "NÃO SE APLICA", "ASSUNTO": "Ofício Conjunto: 2397/2026– 3ª e 4 ª PROSUS – a apresentação de informações e documentos complementares acerca da estruturação da SUCONV e do programa “Saúde Mais Perto de Você”", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-08-05", "PRAZO FINAL": "2026-08-25", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "209965654.0", "DATA RESPOSTA": "2026-08-25", "ENCAMINHAMENTO": "", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "", "DATA ENCAMINHAMENTO": "", "OBSERVAÇÃO": "", "STATUS": "Pendente"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00331555/2026-24", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-07-17", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "Auditoria da Controladoria-Geral da União", "ASSUNTO": "Ofício Conjunto: 12258/2026 - CGSAU/DS/SFC/CGUS – Auditoria da Controladoria-Geral da União. Recursos de emendas parlamentares destinados à saúde. Solicitação de documentos e informações", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-07-24", "PRAZO FINAL": "2026-07-31", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "209371812.0", "DATA RESPOSTA": "2026-07-30", "ENCAMINHAMENTO": "", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "", "DATA ENCAMINHAMENTO": "2026-07-30", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00060-00360526/2026-70", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "2026-07-24", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "STF", "ASSUNTO": "Ofício Circular CONASS nº 052/2026 o CONASS solicita a colaboração da SES/DF para subsidiar a manifestação institucional a ser apresentada perante o Supremo Tribunal Federal – STF, no âmbito da Arguição de Descumprimento de Preceito Fundamental – ADPF nº 854.", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "NÃO SE APLICA", "PRAZO INTERNO": "2026-07-27", "PRAZO FINAL": "2026-07-30", "PROVIDENCIA ADOTADA": "Respostas aos questionamentos", "Nº Documento de Resposta (SUCONV)": "209626037.0", "DATA RESPOSTA": "2026-07-30", "ENCAMINHAMENTO": "", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "", "DATA ENCAMINHAMENTO": "2026-07-30", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00009809/2026-76", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício nº 6936/2026-GP que encaminha a Decisão nº 2426/2026, referente à Representação, formulada pela MPjTCDF, em virtude de supostas irregularidades verificadas no denominado “Projeto Saúde Solidária” (MINHA SAUDE)", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-10", "PRAZO FINAL": "2026-08-10", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-12", "ENCAMINHAMENTO": "encaminhado resposta a ASDOC", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV/DIPREC (211090574)", "DATA ENCAMINHAMENTO": "2026-08-12", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0134281/2026-50", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício nº 2710/2026 - 2ª PROSUS - MPDFT, requisita a no prazo de 10 (dez) dias úteis, a contar do recebimento deste ofício, informações ao Diretor da DIMACP", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-11", "PRAZO FINAL": "2026-08-11", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-11", "ENCAMINHAMENTO": "", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "", "DATA ENCAMINHAMENTO": "2026-08-11", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.4897.0135966/2026-95", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício nº 2695/2026 - 2ª PROSUS (MPDFT), requisita as seguintes informações a respeito da instituição ViV Saúde Mental e Emocional Resiliência Ltda.", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-11", "PRAZO FINAL": "2026-08-11", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-11", "ENCAMINHAMENTO": "", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "", "DATA ENCAMINHAMENTO": "2026-08-11", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00010223/2026-54", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício nº 7184/2026-GP – Representação 64/2025-G2P: emenda parlamentar Dep. Gilvan Máximo – Instituto Impulsionar", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-18", "PRAZO FINAL": "2026-08-18", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-18", "ENCAMINHAMENTO": "encaminhado para DIPCP para providencias quanto o prosseguimento da parceria", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV/DIPREC (211598314)", "DATA ENCAMINHAMENTO": "2026-08-18", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0134273/2026-72", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício nº 2708/2026 - 2ª PROSUS - links de acesso aos Processos SEI da celebração de Convênio ou Contrato entre a Secretaria de Saúde do DF e a Empresa PROSYSTEMA EMPRESARIAL LTDA, CNPJ nº 13.964.461/0001-26.", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-19", "PRAZO FINAL": "2026-08-19", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-10", "ENCAMINHAMENTO": "", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV (210907485)", "DATA ENCAMINHAMENTO": "2026-08-10", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00020-00030183/2026-61", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício Nº 29531/2026 - PGDF/SEGER/SUOP/DIOPE/GEBIN - requisita informações a respeito de realização de consulta para DIONISIO PEIXOTO com fim de resposta a ação judicial 0739401-37.2026.8.07.0016", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-18", "PRAZO FINAL": "2026-08-18", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-18", "ENCAMINHAMENTO": "", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV (211520892)", "DATA ENCAMINHAMENTO": "2026-08-18", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "00600-00010267/2026-84", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício nº 525/2026-G2P, por meio do qual o Ministério Público do Distrito Federal e Territórios requisita informações relacionadas ao contrato Administrativo 056170/2025 que presta o serviço de CIRURGIA OFTALMOLÓGICA visando atender as necessidades de assistência da Secretaria de Estado de Saúde do Distrito Federal - SES/DF.", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-19", "PRAZO FINAL": "2026-08-19", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-18", "ENCAMINHAMENTO": "encaminhado para SUCONV", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV/DIPREC (211614989)", "DATA ENCAMINHAMENTO": "2026-08-18", "OBSERVAÇÃO": "", "STATUS": "Concluído"}, {"Processo SEI REPRESENTAÇÃO (SESDF)": "19.04.3374.0134305/2026-81", "DATA RECEBIMENTO (SES/SUCONV/DIPREC)": "", "Nº DECISÃO": "", "Nº AUDITORIA": "", "PROCESSO TCDF/TCU": "", "REPRESENTAÇÃO": "", "ASSUNTO": "Ofício nº 2727/2026 - 2ª PROSUS (210643686),MPDFT requisita que sejam informados pela SAIS e pela RTD de Cardiologia os Números dos Processos SEI e enviados os links de acesso referentes à celebração e contratação de Oferta de Cuidado Integrado na área de Cardiologia - OCI Progressiva, tais como, OCI Coronária, OCI Insuficiência Cardíaca, OCI Progressão da Coronária e OCI do Risco Cirúrgico.", "EMENDA (FEDERAL/DISTRITAL)": "", "PARLAMENTAR": "", "Destinação (OSC)": "", "PRAZO INTERNO": "2026-08-20", "PRAZO FINAL": "2026-08-20", "PROVIDENCIA ADOTADA": "", "Nº Documento de Resposta (SUCONV)": "", "DATA RESPOSTA": "2026-08-20", "ENCAMINHAMENTO": "encaminhado para SUCONV", "Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)": "Despacho - SES/SECCIC/SUCONV/DIPREC (211870020)", "DATA ENCAMINHAMENTO": "2026-08-20", "OBSERVAÇÃO": "", "STATUS": "Concluído"}];
+const SHEET_CSV="https://docs.google.com/spreadsheets/d/e/2PACX-1vRW32cS-AC8jwA337VK7ipkKFQi5IoWQXftLbg1R9_dP4WjkSlxuruK2GLOpjwexg/pub?gid=993897212&single=true&output=csv";
+const MES_PT=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+
+const C={
+  proc:"Processo SEI REPRESENTAÇÃO (SESDF)",receb:"DATA RECEBIMENTO (SES/SUCONV/DIPREC)",
+  decisao:"Nº DECISÃO",auditoria:"Nº AUDITORIA",proctc:"PROCESSO TCDF/TCU",
+  rep:"REPRESENTAÇÃO",assunto:"ASSUNTO",emenda:"EMENDA (FEDERAL/DISTRITAL)",parl:"PARLAMENTAR",
+  osc:"Destinação (OSC)",prazoInt:"PRAZO INTERNO",prazoFim:"PRAZO FINAL",prov:"PROVIDENCIA ADOTADA",
+  docResp:"Nº Documento de Resposta (SUCONV)",dataResp:"DATA RESPOSTA",encam:"ENCAMINHAMENTO",
+  docEncam:"Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)",dataEncam:"DATA ENCAMINHAMENTO",obs:"OBSERVAÇÃO",status:"STATUS"
+};
+
+function norm(s){return String(s==null?"":s).replace(/\s+/g," ").trim();}
+function origemDe(row){
+  const t=(norm(row[C.rep])+" "+norm(row[C.assunto])).toLowerCase();
+  const rep=norm(row[C.rep]).toLowerCase();
+  if(t.includes("denasus"))return "DENASUS";
+  if(t.includes("controladoria-geral da uni")||/\bcgu\b/.test(t))return "CGU";
+  if(t.includes("cgdf")||t.includes("controladoria-geral do df"))return "CGDF";
+  if(t.includes("mpdft"))return "MPDFT";
+  if((t.includes("minist")&&t.includes("contas"))||/\bmpc\b/.test(t)||t.includes("g2p"))return "Ministério Público de Contas";
+  if(t.includes("tcdf")&&t.includes("tcu"))return "TCDF e TCU";
+  if(t.includes("tcdf"))return "TCDF";
+  if(t.includes("tcu"))return "TCU";
+  if(t.includes("pgdf"))return "PGDF";
+  if(/\bstf\b/.test(t))return "STF";
+  if(t.includes("câmara dos deputados")||t.includes("camara dos deputados"))return "Câmara dos Deputados";
+  if(t.includes("justiça do trabalho"))return "Justiça do Trabalho";
+  if(/\bcrm\b/.test(t))return "CRM-DF";
+  if(t.includes("ouvidoria")||t.includes("ouv-"))return "Ouvidoria";
+  if(t.includes("notícia de fato")||t.includes("noticia de fato"))return "MPF";
+  if(rep.includes("não se aplica")||rep==="")return "Outros órgãos";
+  return "Outros";
+}
+function normStatus(s){
+  s=norm(s).toLowerCase();
+  if(s.startsWith("conclu"))return "Concluído";
+  if(s.startsWith("pend"))return "Pendente";
+  if(s.includes("dilig"))return "Em diligência";
+  return norm(s)||"—";
+}
+function parseData(v){
+  if(!v)return null;const s=norm(v);
+  let m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m){const d=new Date(+m[1],+m[2]-1,+m[3]);d.setHours(0,0,0,0);return d;}
+  m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m){const d=new Date(+m[3],+m[2]-1,+m[1]);d.setHours(0,0,0,0);return d;}
+  return null;
+}
+function mesResposta(row){
+  const d=parseData(row[C.dataResp])||parseData(row[C.dataEncam]);
+  return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:"";
+}
+
+const STATUS_META={"Concluído":{c:"var(--conc)"},"Pendente":{c:"var(--pend)"},"Em diligência":{c:"var(--dilig)"},"—":{c:"var(--ink-3)"}};
+function stripAcc(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+function isParlVazio(s){s=norm(s);return !s||/^(n[ãa]o se aplica|n\/?a)$/i.test(s);}
+function buildParlMap(){
+  const variants={};
+  RAW.forEach(r=>{const raw=norm(r[C.parl]);if(isParlVazio(raw))return;const k=stripAcc(raw).toLowerCase();(variants[k]=variants[k]||[]).push(raw);});
+  const map={};
+  Object.entries(variants).forEach(([k,arr])=>{
+    const score=s=>(s!==stripAcc(s)?2:0)+(s!==s.toUpperCase()?1:0);
+    let best=arr.slice().sort((a,b)=>score(b)-score(a)||b.length-a.length)[0];
+    if(best===best.toUpperCase())best=best.toLowerCase().replace(/\b\p{L}/gu,c=>c.toUpperCase());
+    map[k]=best;
+  });
+  return map;
+}
+function parlCanon(raw,map){if(isParlVazio(raw))return "—";const k=stripAcc(norm(raw)).toLowerCase();return map[k]||norm(raw);}
+let records=[];
+function build(){
+  const pmap=buildParlMap();
+  records=RAW.filter(r=>norm(r[C.proc])).map(r=>({
+    row:r,proc:norm(r[C.proc]),assunto:norm(r[C.assunto]),origem:origemDe(r),
+    parl:parlCanon(r[C.parl],pmap),emenda:isParlVazio(r[C.emenda])?"—":norm(r[C.emenda]),osc:isParlVazio(r[C.osc])?"—":(norm(r[C.osc])||"—"),
+    status:normStatus(r[C.status]),mes:mesResposta(r)
+  }));
+}
+
+const F={status:"",origem:"",emenda:"",parl:"",busca:""};
+function uniq(a){return [...new Set(a)];}
+function fillSel(id,items,all){const s=document.getElementById(id);const cur=s.value;s.innerHTML=`<option value="">${all}</option>`+items.map(i=>`<option value="${String(i).replace(/"/g,'&quot;')}">${i}</option>`).join("");s.value=cur;}
+function buildFilters(){
+  fillSel("f-status",uniq(records.map(r=>r.status)).sort(),"Todos os status");
+  fillSel("f-origem",uniq(records.map(r=>r.origem)).sort(),"Todas as origens");
+  fillSel("f-emenda",uniq(records.map(r=>r.emenda).filter(x=>x!=="—")).sort(),"Todas as emendas");
+  fillSel("f-parl",uniq(records.map(r=>r.parl).filter(x=>x!=="—")).sort(),"Todos os parlamentares");
+}
+function filtered(){
+  const q=F.busca.toLowerCase().trim();
+  return records.filter(r=>{
+    if(F.status&&r.status!==F.status)return false;
+    if(F.origem&&r.origem!==F.origem)return false;
+    if(F.emenda&&r.emenda!==F.emenda)return false;
+    if(F.parl&&r.parl!==F.parl)return false;
+    if(q){const h=(r.proc+" "+r.assunto+" "+r.osc+" "+r.parl+" "+norm(r.row[C.rep])+" "+norm(r.row[C.prov])).toLowerCase();if(!h.includes(q))return false;}
+    return true;
+  });
+}
+
+function render(){
+  build();buildFilters();
+  renderKPIs();renderResolver();renderAgenda();renderOrigem();renderDonut();renderParl();renderMensal();
+  renderTable(filtered());placeProcessos();
+}
+function rerender(){renderKPIs();renderTable(filtered());placeProcessos();}
+function isFiltered(){return !!(F.status||F.origem||F.emenda||F.parl||F.busca);}
+function placeProcessos(){const bl=document.getElementById("processos-block");const t=document.getElementById(isFiltered()?"proc-top":"proc-bottom");if(bl&&t&&bl.parentElement!==t)t.appendChild(bl);}
+
+function renderKPIs(){
+  const total=records.length;
+  const conc=records.filter(r=>r.status==="Concluído").length;
+  const pend=records.filter(r=>r.status==="Pendente").length;
+  const dilig=records.filter(r=>r.status==="Em diligência").length;
+  const noFilter=!F.status&&!F.origem&&!F.emenda&&!F.parl&&!F.busca;
+  const cards=[
+    {n:total,l:"Representações",tag:"ver todas",c:"var(--brand)",act:"all",active:noFilter},
+    {n:conc,l:"Concluídas",tag:"",c:"var(--conc)",act:"Concluído",active:F.status==="Concluído"},
+    {n:pend,l:"Pendentes",tag:"",c:"var(--pend)",act:"Pendente",active:F.status==="Pendente"},
+    {n:dilig,l:"Em diligência",tag:"",c:"var(--dilig)",act:"Em diligência",active:F.status==="Em diligência"},
+  ];
+  const el=document.getElementById("kpis");
+  el.style.gridTemplateColumns=`repeat(${cards.length},minmax(0,1fr))`;
+  el.innerHTML=cards.map(c=>
+    `<div class="kpi clk ${c.active?'active':''}" data-act="${c.act}" style="--c:${c.c}"><div class="n">${c.n}</div><div class="l">${c.l}</div><div class="tag">${c.tag}</div></div>`
+  ).join("");
+  document.querySelectorAll(".kpi.clk").forEach(k=>k.addEventListener("click",()=>{
+    const a=k.dataset.act;
+    if(a==="all"){Object.keys(F).forEach(x=>F[x]="");["f-status","f-origem","f-emenda","f-parl"].forEach(id=>document.getElementById(id).value="");document.getElementById("f-busca").value="";}
+    else{F.status=(F.status===a?"":a);document.getElementById("f-status").value=F.status;}
+    rerender();
+  }));
+}
+
+const HOJE=new Date();HOJE.setHours(0,0,0,0);
+function fmtBR(d){return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;}
+function renderAgenda(){
+  // representações não concluídas com prazo final → agenda de resposta
+  const items=records.map(r=>({r,pi:parseData(r.row[C.prazoInt]),pf:parseData(r.row[C.prazoFim]),rec:parseData(r.row[C.receb])}))
+    .filter(x=>x.pf && x.r.status!=="Concluído");
+  items.sort((a,b)=>a.pf-b.pf);
+  const el=document.getElementById("agenda-section");
+  const dd=d=>Math.round((d-HOJE)/86400000);
+  if(!items.length){
+    el.innerHTML=`<div class="section-h"><h2>Prazos de resposta</h2><div class="rule"></div></div>
+      <div class="panel"><div class="panel-b" style="color:var(--ink-3);font-size:13px;text-align:center;padding:26px">📭 Nenhum prazo de resposta em aberto no momento.<br><span style="font-size:12px">Os prazos aparecem aqui conforme forem preenchidos nas representações mais recentes.</span></div></div>`;
+    return;
+  }
+  // grupos de urgência
+  const groups=[
+    {key:"venc",label:"Prazo expirado",c:"var(--venc)",test:x=>dd(x.pf)<0},
+    {key:"d7",label:"Próximos 7 dias",c:"var(--pend)",test:x=>dd(x.pf)>=0&&dd(x.pf)<=7},
+    {key:"mes",label:"Este mês",c:"var(--brand)",test:x=>dd(x.pf)>7&&dd(x.pf)<=30},
+    {key:"depois",label:"Mais adiante",c:"var(--conc)",test:x=>dd(x.pf)>30},
+  ];
+  const used=new Set();
+  const badge=pf=>{const n=dd(pf);
+    if(n<0)return `<span class="ag-badge" style="background:var(--venc-l);color:var(--venc)">Vencido há ${-n} ${-n===1?'dia':'dias'}</span>`;
+    if(n===0)return `<span class="ag-badge" style="background:var(--pend-l);color:var(--pend)">Vence hoje</span>`;
+    if(n<=7)return `<span class="ag-badge" style="background:var(--pend-l);color:var(--pend)">Faltam ${n} ${n===1?'dia':'dias'}</span>`;
+    return `<span class="ag-badge" style="background:var(--conc-l);color:var(--conc)">Faltam ${n} dias</span>`;};
+  const card=({r,pi,pf,rec})=>{
+    const sc=(STATUS_META[r.status]||{c:'var(--ink-3)'}).c;
+    const timeline=[rec?`<span class="tl-step"><b>Recebido</b> ${fmtBR(rec)}</span>`:"",
+                    pi?`<span class="tl-step"><b>Prazo interno</b> ${fmtBR(pi)}</span>`:"",
+                    `<span class="tl-step tl-final"><b>Prazo final</b> ${fmtBR(pf)}</span>`].filter(Boolean).join('<span class="tl-arrow">→</span>');
+    return `<div class="ag-card" data-proc="${r.proc}">
+      <div class="ag-cal"><div class="ag-cal-d">${String(pf.getDate()).padStart(2,"0")}</div><div class="ag-cal-m">${MES_PT[pf.getMonth()]} ${String(pf.getFullYear()).slice(2)}</div></div>
+      <div class="ag-main">
+        <div class="ag-top"><span class="orgtag">${r.origem}</span><span class="chip" style="background:${sc}1f;color:${sc}">${r.status}</span>${badge(pf)}</div>
+        <div class="ag-assunto">${r.assunto||r.proc}</div>
+        <div class="ag-timeline">${timeline}</div>
+      </div></div>`;
+  };
+  let html=`<div class="section-h"><h2>Prazos de resposta</h2><div class="rule"></div><span class="cnt">${items.length} com prazo em aberto</span></div><div class="panel"><div class="panel-b">`;
+  groups.forEach(g=>{
+    const gi=items.filter(g.test);if(!gi.length)return;
+    html+=`<div class="ag-group"><div class="ag-group-h" style="color:${g.c}"><span class="ag-group-dot" style="background:${g.c}"></span>${g.label}<span class="ag-group-ct">${gi.length}</span></div>${gi.map(card).join("")}</div>`;
+  });
+  html+=`</div></div>`;
+  el.innerHTML=html;
+  el.querySelectorAll(".ag-card").forEach(it=>it.addEventListener("click",()=>openProc(it.dataset.proc)));
+}
+function renderResolver(){
+  const items=records.filter(r=>r.status!=="Concluído");
+  const el=document.getElementById("resolver-section");
+  el.innerHTML=`<div class="resolver">
+    <div class="resolver-h"><span style="font-size:20px">⏳</span><h3>Aguardando resposta</h3><span class="ct">${items.length}</span></div>
+    <div class="resolver-sub">Representações que ainda não foram concluídas pela SUCONV.</div>
+    ${items.length?`<div class="resolver-list">${items.map(r=>`<div class="resolver-item" data-proc="${r.proc}"><div class="ri-assunto">${r.assunto||r.proc}</div><div class="ri-meta">${r.proc}</div><span class="ri-badge" style="background:${r.status==='Pendente'?'var(--pend-l)':'var(--dilig-l)'};color:${r.status==='Pendente'?'var(--pend)':'var(--dilig)'}">${r.status}</span> <span class="orgtag">${r.origem}</span></div>`).join("")}</div>`
+      :`<div class="resolver-empty">✓ Todas as representações foram respondidas.</div>`}
+  </div>`;
+  el.querySelectorAll(".resolver-item").forEach(it=>it.addEventListener("click",()=>openProc(it.dataset.proc)));
+}
+
+const ORG_COLORS=["#144E8C","#2B8A3E","#E8850C","#9C36B5","#0B7285","#C2255C","#2E75B6","#B08900","#5C7CFA","#E03131","#868E96"];
+function renderOrigem(){
+  const m={};records.forEach(r=>{m[r.origem]=(m[r.origem]||0)+1;});
+  const ent=Object.entries(m).sort((a,b)=>b[1]-a[1]);const max=Math.max(1,...ent.map(e=>e[1]));
+  const cmap={};ent.forEach((e,i)=>cmap[e[0]]=ORG_COLORS[i%ORG_COLORS.length]);
+  document.getElementById("chart-origem").innerHTML=ent.map(([k,v])=>
+    `<div class="bar-item" data-origem="${String(k).replace(/"/g,'&quot;')}"><div class="bar-top"><span class="bk">${k}</span><span class="bv">${v}</span></div><div class="bar-outer"><div class="bar-fill" style="width:${v/max*100}%;background:${cmap[k]}"></div></div></div>`
+  ).join("");
+  document.querySelectorAll("#chart-origem .bar-item").forEach(b=>b.addEventListener("click",()=>{const o=b.dataset.origem;F.origem=(F.origem===o?"":o);document.getElementById("f-origem").value=F.origem;rerender();}));
+}
+function renderDonut(){
+  const order=["Concluído","Pendente","Em diligência"].filter(s=>records.some(r=>r.status===s));
+  const others=uniq(records.map(r=>r.status)).filter(s=>!order.includes(s));
+  const all=order.concat(others);
+  const cnt={};all.forEach(s=>cnt[s]=records.filter(r=>r.status===s).length);
+  const total=records.length||1;const R=52,Cc=2*Math.PI*R;let off=0;
+  const col=s=>(STATUS_META[s]||{c:"var(--ink-3)"}).c;
+  const segs=all.filter(s=>cnt[s]>0).map(s=>{const frac=cnt[s]/total,len=frac*Cc;const seg=`<circle r="${R}" cx="70" cy="70" fill="none" stroke="${col(s)}" stroke-width="20" stroke-dasharray="${len} ${Cc-len}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"/>`;off+=len;return seg;}).join("");
+  document.getElementById("donut").innerHTML=`<svg width="140" height="140" viewBox="0 0 140 140">${segs}<text x="70" y="66" text-anchor="middle" font-family="Space Grotesk" font-size="30" font-weight="700" fill="var(--ink)">${records.length}</text><text x="70" y="84" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="var(--ink-3)">total</text></svg>`;
+  document.getElementById("donut-legend").innerHTML=all.map(s=>{const v=cnt[s],p=records.length?Math.round(v/records.length*100):0;return `<div class="leg" data-status="${s}"><span class="dot" style="background:${col(s)}"></span>${s}<span class="lv">${v}</span><span class="lp">${p}%</span></div>`;}).join("");
+  document.querySelectorAll("#donut-legend .leg").forEach(l=>l.addEventListener("click",()=>{const s=l.dataset.status;F.status=(F.status===s?"":s);document.getElementById("f-status").value=F.status;rerender();}));
+}
+function renderParl(){
+  const m={};records.forEach(r=>{if(r.parl&&r.parl!=="—")m[r.parl]=(m[r.parl]||0)+1;});
+  const ent=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,8);const max=Math.max(1,...ent.map(e=>e[1]));
+  if(!ent.length){document.getElementById("chart-parl").innerHTML='<div style="color:var(--ink-3);font-size:13px;text-align:center;padding:20px">Sem parlamentar informado.</div>';return;}
+  document.getElementById("chart-parl").innerHTML=ent.map(([k,v])=>
+    `<div class="bar-item" data-parl="${String(k).replace(/"/g,'&quot;')}"><div class="bar-top"><span class="bk">${k}</span><span class="bv">${v}</span></div><div class="bar-outer"><div class="bar-fill" style="width:${v/max*100}%;background:var(--brand)"></div></div></div>`
+  ).join("");
+  document.querySelectorAll("#chart-parl .bar-item").forEach(b=>b.addEventListener("click",()=>{const p=b.dataset.parl;F.parl=(F.parl===p?"":p);document.getElementById("f-parl").value=F.parl;rerender();}));
+}
+function renderMensal(){
+  const m={};records.forEach(r=>{if(r.mes)m[r.mes]=(m[r.mes]||0)+1;});
+  const meses=Object.keys(m).sort();
+  const el=document.getElementById("chart-mensal");
+  if(!meses.length){el.innerHTML='<div style="color:var(--ink-3);font-size:13px;margin:auto">Sem datas de resposta.</div>';return;}
+  const max=Math.max(...meses.map(k=>m[k]));
+  const lbl=mk=>{const[y,mm]=mk.split("-");return MES_PT[+mm-1]+"/"+y.slice(2);};
+  el.innerHTML=meses.map(mk=>`<div class="mcol"><div class="mval">${m[mk]}</div><div class="mbar" style="height:${Math.max(3,m[mk]/max*130)}px"></div><div class="mlbl">${lbl(mk)}</div></div>`).join("");
+}
+
+function renderTable(data){
+  const el=document.getElementById("table");
+  if(!data.length){el.innerHTML=`<div class="table-empty"><b>Nenhuma representação encontrada</b>Ajuste os filtros.</div>`;return;}
+  const rank={"Pendente":0,"Em diligência":1,"Concluído":2};
+  data.sort((a,b)=>(rank[a.status]??9)-(rank[b.status]??9)||a.proc.localeCompare(b.proc));
+  let html=`<div class="tbl-head"><span>Processo SEI</span><span>Assunto</span><span>Origem</span><span>Parlamentar / OSC</span><span>Status</span></div>`;
+  data.forEach((r,i)=>{
+    const scol=(STATUS_META[r.status]||{c:"var(--ink-3)"}).c;
+    html+=`<div class="trow" data-idx="${i}">
+      <div class="t-proc">${r.proc}</div>
+      <div><div class="t-assunto">${r.assunto||"—"}</div></div>
+      <div><span class="orgtag">${r.origem}</span></div>
+      <div><div style="font-size:12px">${r.parl}</div><div class="t-sub">${r.osc}</div></div>
+      <div class="t-statuscell"><span class="chip" style="background:${scol}1f;color:${scol}">${r.status}</span><span class="t-exp">⌄</span></div>
+    </div>`;
+    html+=detail(r,i);
+  });
+  el.innerHTML=html;
+  html_bindfoot(data);
+  el.querySelectorAll(".trow").forEach(row=>row.addEventListener("click",()=>{const d=row.nextElementSibling;const op=row.classList.toggle("open");if(d&&d.classList.contains("trow-detail"))d.classList.toggle("show",op);}));
+}
+function html_bindfoot(data){
+  const el=document.getElementById("table");
+  const foot=document.createElement("div");foot.className="tbl-foot";
+  foot.innerHTML=`<span>${data.length} de ${records.length} representações</span>`;
+  el.appendChild(foot);
+  document.getElementById("tbl-count").textContent=`${data.length} de ${records.length}`;
+}
+function fmtDataStr(raw){const s=norm(raw);if(!s)return s;const m=s.match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);if(m)return `${m[3]}/${m[2]}/${m[1]}${m[4]||""}`;return s;}
+function di(lbl,val,full){val=norm(val);if(!val||val.toUpperCase()==="NÃO SE APLICA")return "";return `<div class="det-item ${full?'det-full':''}"><div class="det-lbl">${lbl}</div><div class="det-val">${val}</div></div>`;}
+function detail(r,i){
+  const w=r.row;
+  const cells=[
+    di("Data de recebimento",fmtDataStr(w[C.receb])),di("Nº Decisão",w[C.decisao]),di("Nº Auditoria",w[C.auditoria]),
+    di("Processo TCDF/TCU",w[C.proctc]),di("Origem (planilha)",w[C.rep]),di("Emenda",w[C.emenda]),
+    di("Prazo interno",fmtDataStr(w[C.prazoInt])),di("Prazo final",fmtDataStr(w[C.prazoFim])),di("Data da resposta",fmtDataStr(w[C.dataResp])),
+    di("Providência adotada",w[C.prov],true),
+    di("Nº documento de resposta (SUCONV)",w[C.docResp]),di("Encaminhamento",w[C.encam]),
+    di("Nº documento encaminhado",w[C.docEncam]),di("Data encaminhamento",fmtDataStr(w[C.dataEncam])),
+    di("Observação",w[C.obs],true),
+  ].filter(Boolean).join("");
+  return `<div class="trow-detail" data-idx="${i}"><div class="det-grid">${cells||'<div class="det-val" style="color:var(--ink-3)">Sem detalhes adicionais.</div>'}</div></div>`;
+}
+function openProc(proc){
+  document.getElementById("table").scrollIntoView({behavior:"smooth",block:"start"});
+  setTimeout(()=>{document.querySelectorAll(".trow").forEach(row=>{if(row.querySelector(".t-proc")?.textContent===proc){if(!row.classList.contains("open"))row.click();row.scrollIntoView({behavior:"smooth",block:"center"});}});},300);
+}
+
+document.getElementById("f-status").addEventListener("change",e=>{F.status=e.target.value;rerender();});
+document.getElementById("f-origem").addEventListener("change",e=>{F.origem=e.target.value;rerender();});
+document.getElementById("f-emenda").addEventListener("change",e=>{F.emenda=e.target.value;rerender();});
+document.getElementById("f-parl").addEventListener("change",e=>{F.parl=e.target.value;rerender();});
+document.getElementById("f-busca").addEventListener("input",e=>{F.busca=e.target.value;rerender();});
+document.getElementById("f-clear").addEventListener("click",()=>{Object.keys(F).forEach(k=>F[k]="");["f-status","f-origem","f-emenda","f-parl"].forEach(id=>document.getElementById(id).value="");document.getElementById("f-busca").value="";render();});
+
+/* live */
+function parseCSV(text){const rows=[];let row=[],fld="",i=0,q=false;text=String(text).replace(/\r\n/g,"\n").replace(/\r/g,"\n");while(i<text.length){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){fld+='"';i+=2;continue;}q=false;i++;continue;}fld+=c;i++;continue;}if(c==='"'){q=true;i++;continue;}if(c===','){row.push(fld);fld="";i++;continue;}if(c==='\n'){row.push(fld);rows.push(row);row=[];fld="";i++;continue;}fld+=c;i++;}if(fld!==""||row.length){row.push(fld);rows.push(row);}return rows;}
+function csvToObjects(text){const rows=parseCSV(text);if(!rows.length)return [];const hdr=rows[0].map(h=>norm(h));const out=[];for(let r=1;r<rows.length;r++){const c=rows[r];if(!c[0]||!norm(c[0]))continue;const o={};hdr.forEach((h,j)=>{if(h)o[h]=c[j]!=null?norm(c[j]):"";});out.push(o);}return out;}
+function setSrc(t){const el=document.getElementById("src-label");if(el)el.textContent=t;}
+let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.className="toast show";clearTimeout(toastT);toastT=setTimeout(()=>el.className="toast",3000);}
+async function loadLive(silent){
+  if(!SHEET_CSV||SHEET_CSV.indexOf("http")!==0){render();return;}
+  setSrc("carregando do Google Sheets…");
+  try{
+    const bust=SHEET_CSV+(SHEET_CSV.includes("?")?"&":"?")+"_="+Date.now();
+    const txt=await fetch(bust,{cache:"no-store"}).then(r=>r.text());
+    if(/<html/i.test(txt))throw new Error("não publicado");
+    const a=csvToObjects(txt);if(a.length)RAW=a;
+    render();
+    const h=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    setSrc("Google Sheets · atualizado às "+h);
+    if(!silent)toast("Dados atualizados do Google Sheets");
+  }catch(e){console.error(e);setSrc("mostrando dados salvos · falha ao atualizar");if(!silent)toast("Não consegui acessar a planilha publicada.");}
+}
+const rb=document.getElementById("btn-refresh");
+if(SHEET_CSV&&SHEET_CSV.indexOf("http")===0){rb.style.display="inline-block";rb.addEventListener("click",()=>loadLive(false));render();loadLive(true);}
+else{render();}
+</script>
+</body>
+</html>
