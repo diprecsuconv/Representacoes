@@ -210,6 +210,7 @@ h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:27px;letter-
     <div class="field"><label>Órgão de origem</label><select id="f-origem"></select></div>
     <div class="field"><label>Emenda</label><select id="f-emenda"></select></div>
     <div class="field"><label>Parlamentar</label><select id="f-parl"></select></div>
+    <div class="field"><label>Processo TCDF/TCU</label><select id="f-proctc"></select></div>
     <div class="field"><label>Buscar</label><input type="text" id="f-busca" placeholder="assunto, processo, OSC…"></div>
     <button class="btn-clear" id="f-clear">Limpar filtros</button>
   </div>
@@ -295,11 +296,12 @@ function build(){
   records=RAW.filter(r=>norm(r[C.proc])).map(r=>({
     row:r,proc:norm(r[C.proc]),assunto:norm(r[C.assunto]),origem:origemDe(r),
     parl:parlCanon(r[C.parl],pmap),emenda:isParlVazio(r[C.emenda])?"—":norm(r[C.emenda]),osc:isParlVazio(r[C.osc])?"—":(norm(r[C.osc])||"—"),
+    proctc:isParlVazio(r[C.proctc])?"":norm(r[C.proctc]).replace(/\s+/g,""),
     status:normStatus(r[C.status]),mes:mesResposta(r)
   }));
 }
 
-const F={status:"",origem:"",emenda:"",parl:"",busca:""};
+const F={status:"",origem:"",emenda:"",parl:"",proctc:"",busca:""};
 function uniq(a){return [...new Set(a)];}
 function fillSel(id,items,all){const s=document.getElementById(id);const cur=s.value;s.innerHTML=`<option value="">${all}</option>`+items.map(i=>`<option value="${String(i).replace(/"/g,'&quot;')}">${i}</option>`).join("");s.value=cur;}
 function buildFilters(){
@@ -307,6 +309,7 @@ function buildFilters(){
   fillSel("f-origem",uniq(records.map(r=>r.origem)).sort(),"Todas as origens");
   fillSel("f-emenda",uniq(records.map(r=>r.emenda).filter(x=>x!=="—")).sort(),"Todas as emendas");
   fillSel("f-parl",uniq(records.map(r=>r.parl).filter(x=>x!=="—")).sort(),"Todos os parlamentares");
+  fillSel("f-proctc",uniq(records.map(r=>r.proctc).filter(Boolean)).sort(),"Todos os processos TCDF/TCU");
 }
 function filtered(){
   const q=F.busca.toLowerCase().trim();
@@ -315,7 +318,8 @@ function filtered(){
     if(F.origem&&r.origem!==F.origem)return false;
     if(F.emenda&&r.emenda!==F.emenda)return false;
     if(F.parl&&r.parl!==F.parl)return false;
-    if(q){const h=(r.proc+" "+r.assunto+" "+r.osc+" "+r.parl+" "+norm(r.row[C.rep])+" "+norm(r.row[C.prov])).toLowerCase();if(!h.includes(q))return false;}
+    if(F.proctc&&r.proctc!==F.proctc)return false;
+    if(q){const h=(r.proc+" "+r.assunto+" "+r.osc+" "+r.parl+" "+r.proctc+" "+norm(r.row[C.rep])+" "+norm(r.row[C.prov])).toLowerCase();if(!h.includes(q))return false;}
     return true;
   });
 }
@@ -326,7 +330,7 @@ function render(){
   renderTable(filtered());placeProcessos();
 }
 function rerender(){renderKPIs();renderTable(filtered());placeProcessos();}
-function isFiltered(){return !!(F.status||F.origem||F.emenda||F.parl||F.busca);}
+function isFiltered(){return !!(F.status||F.origem||F.emenda||F.parl||F.proctc||F.busca);}
 function placeProcessos(){const bl=document.getElementById("processos-block");const t=document.getElementById(isFiltered()?"proc-top":"proc-bottom");if(bl&&t&&bl.parentElement!==t)t.appendChild(bl);}
 
 function renderKPIs(){
@@ -499,8 +503,9 @@ document.getElementById("f-status").addEventListener("change",e=>{F.status=e.tar
 document.getElementById("f-origem").addEventListener("change",e=>{F.origem=e.target.value;rerender();});
 document.getElementById("f-emenda").addEventListener("change",e=>{F.emenda=e.target.value;rerender();});
 document.getElementById("f-parl").addEventListener("change",e=>{F.parl=e.target.value;rerender();});
+document.getElementById("f-proctc").addEventListener("change",e=>{F.proctc=e.target.value;rerender();});
 document.getElementById("f-busca").addEventListener("input",e=>{F.busca=e.target.value;rerender();});
-document.getElementById("f-clear").addEventListener("click",()=>{Object.keys(F).forEach(k=>F[k]="");["f-status","f-origem","f-emenda","f-parl"].forEach(id=>document.getElementById(id).value="");document.getElementById("f-busca").value="";render();});
+document.getElementById("f-clear").addEventListener("click",()=>{Object.keys(F).forEach(k=>F[k]="");["f-status","f-origem","f-emenda","f-parl","f-proctc"].forEach(id=>document.getElementById(id).value="");document.getElementById("f-busca").value="";render();});
 
 /* live */
 function parseCSV(text){const rows=[];let row=[],fld="",i=0,q=false;text=String(text).replace(/\r\n/g,"\n").replace(/\r/g,"\n");while(i<text.length){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){fld+='"';i+=2;continue;}q=false;i++;continue;}fld+=c;i++;continue;}if(c==='"'){q=true;i++;continue;}if(c===','){row.push(fld);fld="";i++;continue;}if(c==='\n'){row.push(fld);rows.push(row);row=[];fld="";i++;continue;}fld+=c;i++;}if(fld!==""||row.length){row.push(fld);rows.push(row);}return rows;}
