@@ -127,6 +127,7 @@ h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:27px;letter-
 .trow:hover{background:var(--surface-2)}.trow.open{background:var(--brand-l)}
 .t-proc{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-2)}
 .t-assunto{font-weight:600;font-size:12.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.acomp-selo{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FBF0D0;color:var(--gold)}
 .t-sub{font-size:11px;color:var(--ink-3);margin-top:2px}
 .t-statuscell{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .t-exp{color:var(--ink-3);font-size:13px;transition:transform .2s}.trow.open .t-exp{transform:rotate(180deg);color:var(--brand)}
@@ -233,7 +234,8 @@ const C={
   rep:"REPRESENTAÇÃO",assunto:"ASSUNTO",emenda:"EMENDA (FEDERAL/DISTRITAL)",parl:"PARLAMENTAR",
   osc:"Destinação (OSC)",prazoInt:"PRAZO INTERNO",prazoFim:"PRAZO FINAL",prov:"PROVIDENCIA ADOTADA",
   docResp:"Nº Documento de Resposta (SUCONV)",dataResp:"DATA RESPOSTA",encam:"ENCAMINHAMENTO",
-  docEncam:"Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)",dataEncam:"DATA ENCAMINHAMENTO",obs:"OBSERVAÇÃO",status:"STATUS"
+  docEncam:"Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)",dataEncam:"DATA ENCAMINHAMENTO",obs:"OBSERVAÇÃO",status:"STATUS",
+  acomp:"Acompanhamento estratégico"
 };
 
 function norm(s){return String(s==null?"":s).replace(/\s+/g," ").trim();}
@@ -293,17 +295,24 @@ function buildParlMap(){
 }
 function parlCanon(raw,map){if(isParlVazio(raw))return "—";const k=stripAcc(norm(raw)).toLowerCase();return map[k]||norm(raw);}
 let records=[];
+function acompDe(r){
+  // procura a coluna de acompanhamento estratégico (nome flexível) e vê se é "sim"
+  let v=r[C.acomp];
+  if(v==null){for(const k in r){const kk=norm(k).toLowerCase();if(kk.includes("acompanh")){v=r[k];break;}}}
+  const s=norm(v).toLowerCase();
+  return s==="sim"||s==="x"||s==="s"||s.includes("estrat");
+}
 function build(){
   const pmap=buildParlMap();
   records=RAW.filter(r=>norm(r[C.proc])).map(r=>({
     row:r,proc:norm(r[C.proc]),assunto:norm(r[C.assunto]),origem:origemDe(r),
     parl:parlCanon(r[C.parl],pmap),emenda:isParlVazio(r[C.emenda])?"—":norm(r[C.emenda]),osc:isParlVazio(r[C.osc])?"—":(norm(r[C.osc])||"—"),
     proctc:isParlVazio(r[C.proctc])?"":norm(r[C.proctc]).replace(/\s+/g,""),
-    status:normStatus(r[C.status]),mes:mesResposta(r)
+    status:normStatus(r[C.status]),mes:mesResposta(r),acomp:acompDe(r)
   }));
 }
 
-const F={status:"",origem:"",emenda:"",parl:"",proctc:"",busca:""};
+const F={status:"",origem:"",emenda:"",parl:"",proctc:"",busca:"",acomp:false};
 function uniq(a){return [...new Set(a)];}
 function fillSel(id,items,all){const s=document.getElementById(id);const cur=s.value;s.innerHTML=`<option value="">${all}</option>`+items.map(i=>`<option value="${String(i).replace(/"/g,'&quot;')}">${i}</option>`).join("");s.value=cur;}
 function buildFilters(){
@@ -321,6 +330,7 @@ function filtered(){
     if(F.emenda&&r.emenda!==F.emenda)return false;
     if(F.parl&&r.parl!==F.parl)return false;
     if(F.proctc&&r.proctc!==F.proctc)return false;
+    if(F.acomp&&!r.acomp)return false;
     if(q){const h=(r.proc+" "+r.assunto+" "+r.osc+" "+r.parl+" "+r.proctc+" "+norm(r.row[C.rep])+" "+norm(r.row[C.prov])).toLowerCase();if(!h.includes(q))return false;}
     return true;
   });
@@ -332,7 +342,7 @@ function render(){
   renderTable(filtered());placeProcessos();
 }
 function rerender(){renderKPIs();renderTable(filtered());placeProcessos();}
-function isFiltered(){return !!(F.status||F.origem||F.emenda||F.parl||F.proctc||F.busca);}
+function isFiltered(){return !!(F.status||F.origem||F.emenda||F.parl||F.proctc||F.busca||F.acomp);}
 function placeProcessos(){const bl=document.getElementById("processos-block");const t=document.getElementById(isFiltered()?"proc-top":"proc-bottom");if(bl&&t&&bl.parentElement!==t)t.appendChild(bl);}
 
 function renderKPIs(){
@@ -340,12 +350,14 @@ function renderKPIs(){
   const conc=records.filter(r=>r.status==="Concluído").length;
   const pend=records.filter(r=>r.status==="Pendente").length;
   const dilig=records.filter(r=>r.status==="Em diligência").length;
-  const noFilter=!F.status&&!F.origem&&!F.emenda&&!F.parl&&!F.busca;
+  const acomp=records.filter(r=>r.acomp).length;
+  const noFilter=!F.status&&!F.origem&&!F.emenda&&!F.parl&&!F.busca&&!F.acomp&&!F.proctc;
   const cards=[
     {n:total,l:"Representações",tag:"ver todas",c:"var(--brand)",act:"all",active:noFilter},
     {n:conc,l:"Concluídas",tag:"",c:"var(--conc)",act:"Concluído",active:F.status==="Concluído"},
     {n:pend,l:"Pendentes",tag:"",c:"var(--pend)",act:"Pendente",active:F.status==="Pendente"},
     {n:dilig,l:"Em diligência",tag:"",c:"var(--dilig)",act:"Em diligência",active:F.status==="Em diligência"},
+    {n:acomp,l:"Acompanhar",tag:"estratégicas",c:"var(--gold)",act:"acomp",active:F.acomp},
   ];
   const el=document.getElementById("kpis");
   el.style.gridTemplateColumns=`repeat(${cards.length},minmax(0,1fr))`;
@@ -354,8 +366,10 @@ function renderKPIs(){
   ).join("");
   document.querySelectorAll(".kpi.clk").forEach(k=>k.addEventListener("click",()=>{
     const a=k.dataset.act;
-    if(a==="all"){Object.keys(F).forEach(x=>F[x]="");["f-status","f-origem","f-emenda","f-parl"].forEach(id=>document.getElementById(id).value="");document.getElementById("f-busca").value="";}
-    else{F.status=(F.status===a?"":a);document.getElementById("f-status").value=F.status;}
+    const wasAcomp=F.acomp;
+    if(a==="all"){Object.keys(F).forEach(x=>F[x]="");F.acomp=false;["f-status","f-origem","f-emenda","f-parl","f-proctc"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});document.getElementById("f-busca").value="";}
+    else if(a==="acomp"){Object.keys(F).forEach(x=>F[x]="");["f-status","f-origem","f-emenda","f-parl","f-proctc"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});document.getElementById("f-busca").value="";F.acomp=!wasAcomp;}
+    else{F.acomp=false;F.status=(F.status===a?"":a);document.getElementById("f-status").value=F.status;}
     rerender();
   }));
 }
@@ -463,7 +477,7 @@ function renderTable(data){
     const scol=(STATUS_META[r.status]||{c:"var(--ink-3)"}).c;
     html+=`<div class="trow" data-idx="${i}">
       <div class="t-proc">${r.proc}</div>
-      <div><div class="t-assunto">${r.assunto||"—"}</div></div>
+      <div><div class="t-assunto">${r.assunto||"—"}</div>${r.acomp?'<span class="acomp-selo">★ Acompanhar</span>':''}</div>
       <div><span class="orgtag">${r.origem}</span></div>
       <div><div style="font-size:12px">${r.parl}</div><div class="t-sub">${r.osc}</div></div>
       <div class="t-statuscell"><span class="chip" style="background:${scol}1f;color:${scol}">${r.status}</span><span class="t-exp">⌄</span></div>
@@ -490,7 +504,7 @@ function detail(r,i){
     di("Processo TCDF/TCU",w[C.proctc]),di("Origem (planilha)",w[C.rep]),di("Emenda",w[C.emenda]),
     di("Prazo interno",fmtDataStr(w[C.prazoInt])),di("Prazo final",fmtDataStr(w[C.prazoFim])),di("Data da resposta",fmtDataStr(w[C.dataResp])),
     di("Providência adotada",w[C.prov],true),
-    di("Nº documento de resposta (SUCONV)",w[C.docResp]),di("Encaminhamento",w[C.encam]),
+    di("Nº documento de resposta (SUCONV/DIPREC)",w[C.docResp]||w["Nº Documento de Resposta (SUCONV/DIPREC)"]||w["Nº Documento de Resposta (SUCONV)"]),di("Encaminhamento",w[C.encam]),
     di("Nº documento encaminhado",w[C.docEncam]),di("Data encaminhamento",fmtDataStr(w[C.dataEncam])),
     di("Observação",w[C.obs],true),
   ].filter(Boolean).join("");
