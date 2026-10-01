@@ -438,7 +438,7 @@ function renderAgenda(){
       const bd=(tipo==="int"||tipo==="fim"||tipo==="resp")?`<div class="rp-badge">${dd(d)<0?`${-dd(d)}d atraso`:dd(d)===0?"hoje":`faltam ${dd(d)}d`}</div>`:"";
       return `<div class="rp-btn ${cls}"><div class="rp-n">${lbl}</div><div class="rp-v">${fmtBR(d)}</div>${bd}</div>`;
     };
-    const areaBtns=(areas&&areas.length)?areas.map(a=>`<div class="rp-btn rp-area"><div class="rp-n">📍 Área</div><div class="rp-v">${a}</div></div>`).join(""):"";
+    const areaBtns=(areas&&areas.length)?areas.map(a=>`<div class="rp-btn rp-area"><div class="rp-n">📍 Unidade</div><div class="rp-v">${a}</div></div>`).join(""):"";
     return `<div class="rp-card" data-proc="${r.proc}">
       <div class="rp-head"><div><div class="rp-assunto">${r.assunto||r.proc}</div><div class="rp-proc">${r.proc}</div></div><div class="rp-meta"><span class="orgtag">${r.origem}</span><span class="chip" style="background:${sc}1f;color:${sc}">${r.status}</span></div></div>
       <div class="rp-track">${btn("Recebido",rec,"rec")}${btn("Prazo interno",pi,"int")}${areaBtns}${btn("Prazo resposta da área",pr,"resp")}${btn("Prazo final",pf,"fim")}</div>
@@ -543,7 +543,7 @@ function detail(r,i){
   const cells=[
     di("Data de recebimento",fmtDataStr(w[C.receb])),di("Nº Decisão",w[C.decisao]),di("Nº Auditoria",w[C.auditoria]),
     di("Processo TCDF/TCU",w[C.proctc]),di("Origem (planilha)",w[C.rep]),di("Emenda",w[C.emenda]),
-    di("Prazo interno",fmtDataStr(w[C.prazoInt])),di("Prazo final",fmtDataStr(w[C.prazoFim])),di("Área demandada (atual)",areaDe(r)),di("Prazo resposta da área",fmtDataStr(w[C.prazoResp])),di("Data da resposta",fmtDataStr(w[C.dataResp])),
+    di("Prazo interno",fmtDataStr(w[C.prazoInt])),di("Prazo final",fmtDataStr(w[C.prazoFim])),di("Unidade demandada",areaDe(r)),di("Prazo resposta da área",fmtDataStr(w[C.prazoResp])),di("Data da resposta",fmtDataStr(w[C.dataResp])),
     di("Providência adotada",w[C.prov],true),
     di("Nº documento de resposta (SUCONV/DIPREC)",w[C.docResp]||w["Nº Documento de Resposta (SUCONV/DIPREC)"]||w["Nº Documento de Resposta (SUCONV)"]),di("Encaminhamento",w[C.encam]),
     di("Nº documento encaminhado",w[C.docEncam]),di("Data encaminhamento",fmtDataStr(w[C.dataEncam])),
