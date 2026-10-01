@@ -109,6 +109,28 @@ h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:27px;letter-
 .ag-meta{font-size:11px;color:var(--ink-2);margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .ag-days{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px}
 .ag-int{font-size:10.5px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace}
+.area-tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FBF0D0;color:var(--gold);white-space:nowrap}
+.rp-list{display:flex;flex-direction:column;gap:10px}
+.rp-card{border:1px solid var(--line-2);border-radius:12px;padding:13px 15px;background:var(--surface);cursor:pointer;transition:transform .12s,box-shadow .12s}
+.rp-card:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(20,40,70,.1);border-color:var(--brand)}
+.rp-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.rp-assunto{font-weight:600;font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:640px}
+.rp-proc{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-3);margin-top:2px}
+.rp-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rp-track{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.rp-btn{border:1px solid var(--line);border-radius:9px;padding:7px 12px;min-width:110px;background:var(--surface-2)}
+.rp-n{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-3)}
+.rp-v{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;margin-top:2px}
+.rp-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-top:4px;display:inline-block}
+.rp-rec{background:var(--brand-l);border-color:#BcD4EC}
+.rp-area{background:#FBF0D0;border-color:#EAD79A}
+.rp-dia .rp-badge{background:var(--conc-l);color:var(--conc)}
+.rp-prox{background:var(--pend-l);border-color:#F2D3A8}.rp-prox .rp-badge{background:#fff;color:var(--pend)}
+.rp-venc{background:var(--venc-l);border-color:#F2C0C0}.rp-venc .rp-badge{background:#fff;color:var(--venc)}
+.pz-box{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.pz-linha{display:flex;align-items:center;gap:8px;font-size:11.5px;flex-wrap:wrap}
+.pz-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-3);min-width:82px}
+.pz-dt{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--ink)}
 .ag-empty{color:var(--ink-3);font-size:13px;text-align:center;padding:22px}
 
 .filters{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow);display:flex;gap:11px;flex-wrap:wrap;align-items:flex-end}
@@ -232,7 +254,7 @@ const C={
   proc:"Processo SEI REPRESENTAÇÃO (SESDF)",receb:"DATA RECEBIMENTO (SES/SUCONV/DIPREC)",
   decisao:"Nº DECISÃO",auditoria:"Nº AUDITORIA",proctc:"PROCESSO TCDF/TCU",
   rep:"REPRESENTAÇÃO",assunto:"ASSUNTO",emenda:"EMENDA (FEDERAL/DISTRITAL)",parl:"PARLAMENTAR",
-  osc:"Destinação (OSC)",prazoInt:"PRAZO INTERNO",prazoFim:"PRAZO FINAL",prov:"PROVIDENCIA ADOTADA",
+  osc:"Destinação (OSC)",prazoInt:"PRAZO INTERNO",prazoFim:"PRAZO FINAL",prov:"PROVIDENCIA ADOTADA",area:"Área demandada (Atual)",prazoResp:"Prazo resposta (Àrea demandada)",
   docResp:"Nº Documento de Resposta (SUCONV)",dataResp:"DATA RESPOSTA",encam:"ENCAMINHAMENTO",
   docEncam:"Nº DOCUMENTO ENCAMINHADO (OFICIO, DILIGENCIA)",dataEncam:"DATA ENCAMINHAMENTO",obs:"OBSERVAÇÃO",status:"STATUS",
   acomp:"Acompanhamento estratégico"
@@ -377,42 +399,61 @@ function renderKPIs(){
 const HOJE=new Date();HOJE.setHours(0,0,0,0);
 function fmtBR(d){return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;}
 let prazoBucket="";
+function areaDe(r){
+  let v=r.row[C.area];
+  if(v==null){for(const k in r.row){const kk=norm(k).toLowerCase();if(kk.includes("área deman")||kk.includes("area deman")||kk.includes("área atual")||kk.includes("area atual")||kk.includes("onde est")){v=r.row[k];break;}}}
+  v=norm(v);return (!v||v.toUpperCase()==="NÃO SE APLICA")?"":v;
+}
+function areasLista(r){const v=areaDe(r);return v?v.split(/[,;/]+| e /).map(s=>s.trim()).filter(Boolean):[];}
+function prazoRespDe(r){let v=r.row[C.prazoResp];if(v==null){for(const k in r.row){const kk=norm(k).toLowerCase();if(kk.includes("prazo")&&(kk.includes("deman")||kk.includes("resposta")&&kk.includes("área")))v=r.row[k];}}return parseData(v);}
 function renderAgenda(){
-  const items=records.map(r=>({r,pi:parseData(r.row[C.prazoInt]),pf:parseData(r.row[C.prazoFim]),rec:parseData(r.row[C.receb])}))
-    .filter(x=>x.pf && x.r.status!=="Concluído");
+  const items=records.map(r=>({r,pi:parseData(r.row[C.prazoInt]),pf:parseData(r.row[C.prazoFim]),rec:parseData(r.row[C.receb]),pr:prazoRespDe(r),areas:areasLista(r)}))
+    .filter(x=>(x.pf||x.pi) && x.r.status!=="Concluído");
   const el=document.getElementById("agenda-section");
   const dd=d=>Math.round((d-HOJE)/86400000);
   if(!items.length){
-    el.innerHTML=`<div class="section-h"><h2>Prazos de resposta</h2><div class="rule"></div></div>
-      <div class="panel"><div class="panel-b" style="color:var(--ink-3);font-size:13px;text-align:center;padding:26px">📭 Nenhum prazo de resposta em aberto no momento.<br><span style="font-size:12px">Os prazos aparecem aqui conforme forem preenchidos nas representações mais recentes.</span></div></div>`;
+    el.innerHTML=`<div class="section-h"><h2>Acompanhamento</h2><div class="rule"></div></div>
+      <div class="panel"><div class="panel-b" style="color:var(--ink-3);font-size:13px;text-align:center;padding:26px">📭 Nenhuma representação em andamento com prazo no momento.<br><span style="font-size:12px">Aparecem aqui as não concluídas com prazo interno ou final preenchido.</span></div></div>`;
     return;
   }
-  const fora=items.filter(x=>dd(x.pf)<0);
-  const p7=items.filter(x=>dd(x.pf)>=0&&dd(x.pf)<=7);
-  const p30=items.filter(x=>dd(x.pf)>7&&dd(x.pf)<=30);
-  const dep=items.filter(x=>dd(x.pf)>30);
+  // urgência pelo prazo mais próximo entre interno e final (o que ainda importa)
+  const urg=x=>{const cand=[x.pi,x.pf,x.pr].filter(Boolean).map(dd);return cand.length?Math.min(...cand):9999;};
+  const fora=items.filter(x=>urg(x)<0);
+  const p7=items.filter(x=>urg(x)>=0&&urg(x)<=7);
+  const p30=items.filter(x=>urg(x)>7&&urg(x)<=30);
+  const dep=items.filter(x=>urg(x)>30);
   const buckets={fora:{l:"Prazo expirado",its:fora,c:"var(--venc)"},p7:{l:"Próximos 7 dias",its:p7,c:"var(--pend)"},p30:{l:"Em 8–30 dias",its:p30,c:"var(--brand)"},dep:{l:"Mais adiante",its:dep,c:"var(--conc)"}};
   if(!prazoBucket||!buckets[prazoBucket].its.length){prazoBucket=(fora.length?"fora":p7.length?"p7":p30.length?"p30":"dep");}
   const badge=pf=>{const n=dd(pf);
     if(n<0)return `<span class="ag-days" style="background:var(--venc-l);color:var(--venc)">${-n} ${-n===1?'dia':'dias'} de atraso</span>`;
     if(n===0)return `<span class="ag-days" style="background:var(--pend-l);color:var(--pend)">vence hoje</span>`;
     return `<span class="ag-days" style="background:${n<=7?'var(--pend-l)':'var(--conc-l)'};color:${n<=7?'var(--pend)':'var(--conc)'}">faltam ${n} ${n===1?'dia':'dias'}</span>`;};
-  const item=({r,pi,pf})=>{
+  const item=({r,pi,pf,rec,pr,areas})=>{
     const sc=(STATUS_META[r.status]||{c:'var(--ink-3)'}).c;
-    const interno=pi?`<span class="ag-int">· interno ${fmtBR(pi)}</span>`:"";
-    return `<div class="ag-item" data-proc="${r.proc}"><div class="ag-date"><div class="d">${String(pf.getDate()).padStart(2,'0')}</div><div class="m">${MES_PT[pf.getMonth()]}/${String(pf.getFullYear()).slice(2)}</div></div>
-      <div class="ag-body"><div class="ag-inst">${r.assunto||r.proc}</div><div class="ag-meta"><span class="orgtag">${r.origem}</span><span class="chip" style="background:${sc}1f;color:${sc}">${r.status}</span>${badge(pf)}${interno}</div></div></div>`;
+    const btn=(lbl,d,tipo)=>{
+      if(!d)return "";
+      let cls="rp-neutro";
+      if(tipo==="rec")cls="rp-rec";
+      else{const n=dd(d);cls=n<0?"rp-venc":(n<=7?"rp-prox":"rp-dia");}
+      const bd=(tipo==="int"||tipo==="fim"||tipo==="resp")?`<div class="rp-badge">${dd(d)<0?`${-dd(d)}d atraso`:dd(d)===0?"hoje":`faltam ${dd(d)}d`}</div>`:"";
+      return `<div class="rp-btn ${cls}"><div class="rp-n">${lbl}</div><div class="rp-v">${fmtBR(d)}</div>${bd}</div>`;
+    };
+    const areaBtns=(areas&&areas.length)?areas.map(a=>`<div class="rp-btn rp-area"><div class="rp-n">📍 Área</div><div class="rp-v">${a}</div></div>`).join(""):"";
+    return `<div class="rp-card" data-proc="${r.proc}">
+      <div class="rp-head"><div><div class="rp-assunto">${r.assunto||r.proc}</div><div class="rp-proc">${r.proc}</div></div><div class="rp-meta"><span class="orgtag">${r.origem}</span><span class="chip" style="background:${sc}1f;color:${sc}">${r.status}</span></div></div>
+      <div class="rp-track">${btn("Recebido",rec,"rec")}${btn("Prazo interno",pi,"int")}${areaBtns}${btn("Prazo resposta da área",pr,"resp")}${btn("Prazo final",pf,"fim")}</div>
+    </div>`;
   };
-  let html=`<div class="section-h"><h2>Prazos de resposta</h2><div class="rule"></div><span class="cnt">${items.length} com prazo em aberto</span></div>
+  let html=`<div class="section-h"><h2>Acompanhamento</h2><div class="rule"></div><span class="cnt">${items.length} em andamento</span></div>
     <div class="panel"><div class="panel-b">
     <div class="prazo-chips">`+Object.entries(buckets).map(([k,b])=>`<div class="pchip ${prazoBucket===k?'active':''}" data-b="${k}" style="--pc:${b.c}"><span class="pcn">${b.its.length}</span><span class="pcl">${b.l}</span></div>`).join("")+`</div>`;
-  const its=[...buckets[prazoBucket].its].sort((a,b)=>a.pf-b.pf);
+  const its=[...buckets[prazoBucket].its].sort((a,b)=>urg(a)-urg(b));
   if(!its.length){html+=`<div class="ag-empty">Nenhum prazo neste período.</div>`;}
-  else{const half=Math.ceil(its.length/2);html+=`<div class="prazo-cols"><div>${its.slice(0,half).map(item).join("")}</div><div>${its.slice(half).map(item).join("")}</div></div>`;}
+  else{html+=`<div class="rp-list">${its.map(item).join("")}</div>`;}
   html+=`</div></div>`;
   el.innerHTML=html;
   el.querySelectorAll(".pchip").forEach(c=>c.addEventListener("click",()=>{prazoBucket=c.dataset.b;renderAgenda();}));
-  el.querySelectorAll(".ag-item").forEach(it=>it.addEventListener("click",()=>openProc(it.dataset.proc)));
+  el.querySelectorAll(".rp-card").forEach(it=>it.addEventListener("click",()=>openProc(it.dataset.proc)));
 }
 function renderResolver(){
   const items=records.filter(r=>r.status!=="Concluído");
@@ -502,7 +543,7 @@ function detail(r,i){
   const cells=[
     di("Data de recebimento",fmtDataStr(w[C.receb])),di("Nº Decisão",w[C.decisao]),di("Nº Auditoria",w[C.auditoria]),
     di("Processo TCDF/TCU",w[C.proctc]),di("Origem (planilha)",w[C.rep]),di("Emenda",w[C.emenda]),
-    di("Prazo interno",fmtDataStr(w[C.prazoInt])),di("Prazo final",fmtDataStr(w[C.prazoFim])),di("Data da resposta",fmtDataStr(w[C.dataResp])),
+    di("Prazo interno",fmtDataStr(w[C.prazoInt])),di("Prazo final",fmtDataStr(w[C.prazoFim])),di("Área demandada (atual)",areaDe(r)),di("Prazo resposta da área",fmtDataStr(w[C.prazoResp])),di("Data da resposta",fmtDataStr(w[C.dataResp])),
     di("Providência adotada",w[C.prov],true),
     di("Nº documento de resposta (SUCONV/DIPREC)",w[C.docResp]||w["Nº Documento de Resposta (SUCONV/DIPREC)"]||w["Nº Documento de Resposta (SUCONV)"]),di("Encaminhamento",w[C.encam]),
     di("Nº documento encaminhado",w[C.docEncam]),di("Data encaminhamento",fmtDataStr(w[C.dataEncam])),
